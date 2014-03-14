@@ -16,5 +16,11 @@
 			<result name="notLogin" type="redirect">/login.jsp</result>
 		</action>
 		
+		
+        <action name="registerAction" class="com.action.registerAction">
+			<result name="success">/login.jsp</result>
+			<result name="fail" type="redirect">/register.jsp</result>
+		</action>
+		
   </package>
 </struts>    

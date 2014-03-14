@@ -77,7 +77,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				<p>
 				<% 
 				String message=(String)request.getAttribute("message");
-				if (message!=null)
+				if (message=="username or password is ok?") 
 					out.println("用户名或密码错误！");
 				%>
 				</p>

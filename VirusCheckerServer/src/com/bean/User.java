@@ -68,5 +68,38 @@ public class User {
 		this.mail = mail;
 		this.agpassword = agpassword;
 	}
+
+	public boolean checkRegisterInfoNotNull()
+	{
+		boolean bl;
+		if (this.username==null || this.username.equals(""))
+		{
+			bl=false;
+		}
+		else if (this.password==null || this.password.equals(""))
+		{
+			bl=false;
+		}
+		else if (this.agpassword==null || this.agpassword.equals(""))
+		{
+			bl=false;
+		}
+		else if (this.mail==null || this.mail.equals(""))
+		{
+			bl=false;
+		}
+		else
+		{
+			bl=true;
+			
+		}		
+		return bl;
+	}
+	
+	public boolean checkAgPwdEqPwd()
+	{
+		return password.equals(agpassword);
+	}
+	
 	
 }

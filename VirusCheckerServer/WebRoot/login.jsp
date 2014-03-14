@@ -29,7 +29,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		<!-- Title/Logo - can use text instead of image -->
 		<div id="title">
 			<img SRC="img/logo.png" alt="Administry" />
-			<!--<span>Administry</span> demo-->
 		</div>
 		<!-- Main navigation -->
 		<nav id="menu">
@@ -56,32 +55,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			<br/><br/><br/>
 			<h3>欢迎使用恶意代码监测中心</h3>
 
-			<!--  <div class="box box-info">Type anything to log in</div>-->
 
-			<form id="loginform" method="post" action="checkLoginAction.action">
+			<form id="loginform" method="post" action="loginAction.action">
 				<p>
 					<label class="required" for="username">用户名:</label><br /> 
-					<input type="text" id="username" class="full" value="<%
-							String username=(String)request.getAttribute("username");
-							
-							if (username!=null && !username.equals(""))
-							{
-								out.print(username);
-							}
-						%>" name="username" />
+					<input type="text" id="username" class="full" value=""  name="username" />
 				</p>
 
 				<p>
 					<label class="required" for="password">密码:</label><br /> <input
-						type="password" id="password" class="full" value=""
-						name="password" />
+						type="password" id="password" class="full" value="" name="password" />
 				</p>
 
-				<p>
-					<input type="checkbox" id="remember" class="" value="1"
-						name="remember" /> <label class="choice" for="remember">
-						记住我?</label>
-				</p>
 
 				<p>
 					<input type="submit" class="btn btn-green big" value="登录" />

@@ -22,5 +22,10 @@
 			<result name="fail" type="redirect">/register.jsp</result>
 		</action>
 		
+		 <action name="exitAction" class="com.action.exitAction">
+			<result name="success">/login.jsp</result>
+		</action>
+		
+		
   </package>
 </struts>    

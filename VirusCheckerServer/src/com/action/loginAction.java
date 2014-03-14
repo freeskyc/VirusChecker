@@ -5,11 +5,11 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.ServletActionContext;
-
-//import com.config;
-import com.bean.User;
 import com.opensymphony.xwork2.Action;
 import com.opensymphony.xwork2.ActionContext;
+
+import com.Helper;
+import com.bean.User;
 import com.work.UserWork;
 
 public class loginAction implements Action {
@@ -51,9 +51,9 @@ public class loginAction implements Action {
 		
 		if (user.getId()>0)
 		{
-			//Map<String, Object>  session = ActionContext.getContext().getSession();
-        	//session.put(config.sidSession,user.getId());
-        	//session.put(config.permissionSession, user.getPermission());
+			Map<String, Object>  session = ActionContext.getContext().getSession();
+        	session.put(Helper.uidSession,user.getId());
+        	session.put(Helper.permissionSession, user.getPermission());
         	return SUCCESS;
 		}
 		message = "username or password is ok?";

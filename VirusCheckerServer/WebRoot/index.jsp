@@ -18,9 +18,48 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<!--
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	-->
+	<script>
+	$(function(){		
+		$('#tableexp').dataTable({"bFilter": false,"bSort": false,"bPaginate": false,"bLengthChange": false,"bInfo": false,"bAutoWidth": false});
+	});
+</script>
+	
+	
   </head>
   
   <body>
-    This is my JSP page. <br>
+
+	<div id="tabs">
+	<header id="top">
+	<div class="wrapper">
+		<!-- Title/Logo - can use text instead of image -->
+		<div id="title">
+			<img SRC="img/logo.png" alt="Administry" />
+			<!--<span>Administry</span> demo-->
+		</div>
+		<!-- Top navigation -->
+		<div id="topnav">
+			<a href="#"><img class="avatar" SRC="img/user_32.png" alt="" /></a>
+			以<b>
+			<%
+			 int pid=(Integer)request.getAttribute("permission");
+			 //out.print("<script>manager.setPid("+pid+")</script>");
+			 if (pid==1)
+			 {
+				 out.print("管理员");
+			 }
+			 else
+			 {
+				 out.print("用户");
+			 }
+			%></b>身份登录 <span>|</span>
+			<span>|</span> <a href="./exitAction.action">退出</a><br /> 
+		</div>
+		<!-- End of Top navigation -->
+		</div>
+		</header>
+		</div>
+		
+
   </body>
 </html>

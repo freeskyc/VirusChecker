@@ -16,9 +16,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<meta http-equiv="expires" content="0">    
 	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
 	<meta http-equiv="description" content="This is my page">
-	<!--
-	<link rel="stylesheet" type="text/css" href="styles.css">
-	-->
+	
+	
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
+	
 
   </head>
   
@@ -103,18 +104,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 						out.print("注册用户失败!");
 					}
 				%></p><br/>
-			</form>
-
-			<form id="emailform" style="display:none" method="post" action="#">
-				<div class="box">
-					<p id="emailinput">
-						<label for="email">邮箱:</label><br /> <input type="text"
-							id="email" class="full" value="" name="email" />
-					</p>
-					<p>
-						<input type="submit" class="btn" value="提交" />
-					</p>
-				</div>
 			</form>
 
 			</section>

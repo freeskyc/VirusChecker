@@ -13,16 +13,17 @@ public class indexAction implements Action {
 	public String execute() throws Exception {
 		// TODO Auto-generated method stub
 		int uid = Helper.getUIDSession();
+		System.out.println(uid);
 		if (uid>0)
 		{
 			HttpServletRequest request = ServletActionContext.getRequest();
 			int pid = Helper.getPermissionSession();
 			request.setAttribute("permission", pid);
-			
+			System.out.println(uid+"l");
 			return SUCCESS;
 		}
 		else{
-			return "no_login";
+			return "notLogin";
 		}
 		
 	}

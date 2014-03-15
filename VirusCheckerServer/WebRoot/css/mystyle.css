@@ -1,0 +1,332 @@
+@CHARSET "UTF-8";
+.width738
+{
+	width:730px;
+}
+
+.settlementlink
+{
+	text-decoration:none;
+}
+
+.pcItems
+{
+	float:left;
+	margin-left:20px;
+	margin-bottom:20px;
+}
+
+.pcItem
+{
+	background:url('../img/my/pcscreen.png');
+	width:200px;
+	height:146px;
+}
+
+.pcInfo
+{
+	color:white;
+}
+
+.pcInfo1,.pcInfo2
+{
+	margin-left:25px;
+}
+
+.pcInfo3,.pcInfo4
+{
+	margin-left:90px;
+}
+
+.pcButtons
+{
+	text-align :center
+}
+
+.boldfont
+{
+	font-weight:bold;
+	cursor:pointer;
+	
+}
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+.nullpage
+{
+	background:url('../img/my/404.png');
+	width:500px;
+	height:450px;
+}
+
+.minsize
+{
+	min-height:330px;
+	position:relative;
+}
+
+.mhiden
+{
+	display:none;
+}
+
+.upnextArea
+{
+	text-align:left;
+	position:relative; 
+	bottom:0
+}
+
+.bconent a
+{
+	color: #329ECC;
+	text-decoration: none;
+	border-bottom: 1px solid #A1CFD4;
+}
+
+.vmosleft
+{
+	width:200px;
+	height:150px;
+	float:left;
+}
+
+.vmosright
+{
+	float:left;
+	height:150px;
+}
+
+.clearB
+{
+	clear:both;
+}
+
+.textCenter
+{
+	text-align:center;
+}
+
+.table-a
+{
+	color: #329ECC;
+	text-decoration: none;
+	cursor:pointer;
+}
+
+.vmlist
+{
+	margin-top:15px;
+	margin-bottom:15px;
+}
+
+.fcprocess
+{
+	width:990px;
+	position:relative;
+	/*min-height:400px;*/
+	float:left;
+}
+
+.fcwindow
+{
+	width:990px;
+	position:relative;
+	/*min-height:400px;*/
+	overflow-x:hidden
+}
+
+#fccontent
+{
+	position:relative;
+	/*overflow-x:hidden;*/
+}
+
+.vmfreshIcon
+{
+	width:20px;
+	height:20px;
+	position:relative;
+	top:-35px;
+	left:600px;
+	cursor:pointer;
+}
+
+.vmrefreshdiv
+{
+	text-align:center;
+}
+
+.fcvmslistitem
+{
+	width:162px;
+	float:left;
+	text-align:center;
+}
+
+.fcvmslisticon
+{
+	height:112px;
+	width:150px;
+}
+
+.fcvmslisticon img
+{
+	width:100%;
+	height:100%;
+	position:relative;
+}
+
+.trfcColor1
+{
+	background-color:#ddffdd;
+}
+
+.thfcColor{
+	background-color:#5D9ADF;
+	color:#fff;
+}
+
+
+
+.trfcColor2
+{
+	background-color:#ffeeee;
+}
+
+.trfcColor3
+{
+	background-color:#f9f8a9;
+}
+
+.fccrtable td
+{
+	text-align:center;
+}
+
+.fccrtable
+{
+	width:100%;
+}
+
+.usostable
+{
+	width:100%;
+}
+
+.usostable td
+{
+	text-align:center;
+}
+
+.heigth20
+{
+	margin-top:20px;
+}
+
+#nVmPort
+{
+	width:50px;
+}
+
+.vmaddNewTable td
+{
+	padding-left:5px;
+	padding-right:5px;
+}
+
+.manager_tab_style
+{
+	color:#fbfaa6;
+}
+
+.checkfileStyle
+{
+	color:#93BB3A;
+	font-weight:bold;
+}
+
+#fcvmReportTable{
+	text-align:center;
+}
+
+.checkUrlItemTD
+{
+	/*text-align:left;*/
+}
+
+.tdtextcenter
+{
+	text-align: center;
+}
+
+.thcuColor{
+	background-color:#5D9ADF;
+	color:#fff;
+	min-width:60px;
+	text-align: center;
+}
+
+.trcuColor{
+	background-color:#E0FFFF;
+	min-width:40px;
+	text-align: center;
+}
+
+.trcuColorBefore{
+	background-color:#E0FFFF;
+	text-align: center;
+	min-width:455px;
+}
+
+.urlrptable
+{
+	clear:both;
+	min-width:500px;
+	/*border:1px solid #F0FFFF;*/
+	
+}
+
+.bigFontCR
+{
+	font-size:18px;
+}
+
+.middleFontCR
+{
+	font-size:15px;
+}
+
+.fciconImg
+{
+	width:20px;
+	height:20px;
+	margin:0px auto;
+}
+
+.reportViewDiv
+{
+	width:325px;
+	height:325px;
+	float:left;
+	margin-left:5px;
+	margin-bottom:15px;
+}
+
+#fcReportFinalDiv td
+{
+	vertical-align:middle;
+	font-size:15px;
+	text-align:center;
+}
+
+#fcReportFinalDiv 
+{
+	vertical-align:middle;
+	text-align:center;
+	
+}
+
+#historyRecordDiv table
+{
+	text-align:center;
+}

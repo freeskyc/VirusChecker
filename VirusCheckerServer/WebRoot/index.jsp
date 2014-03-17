@@ -1,4 +1,8 @@
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ page language="java" import="com.bean.OSLinkNumBean"%>
+<%@ page language="java" import="com.bean.VMInfoBean"%>
+<%@ page language="java" import="com.bean.SysInfoBean"%>
+
 <%
 	String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -22,6 +26,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <script type="text/javascript" SRC="js/jquery-1.8.0.js"></script> 
 <script type="text/javascript" SRC="js/jquery-ui-1.8.16.custom.min.js"></script>
 <script type="text/javascript" SRC="js/mfunction.js"></script>
+
+<!--  jquery.dataTables.min.js 网上说会table好看些，没感觉啊～～ -->
+<script type="text/javascript" SRC="js/jquery.dataTables.min.js"></script>
+
+<!--  jquery.form.js 如果缺了它就会报错：has no ajaxsubmit method -->
+<script type="text/javascript" SRC="js/jquery.form.js"></script>
 
 <script>
 	var manager=new VManager();
@@ -121,8 +131,87 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	</div>
 
 	<div id="tab-vmos" class="wrapper minsize">
+		<fieldset><legend>已有的系统如下</legend>
+	<%
+		//为了获得systemid 对应 的number
+		List<OSLinkNumBean> oslinkList=(List<OSLinkNumBean>)request.getAttribute("oslink"); 
+		//system的各个info
+		List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
+		
+		int oslinkLength=0;
+		if (oslinkList!=null)
+		{
+			oslinkLength=oslinkList.size();
+		}
+		//if (oslinkLength > 0) 
+		//{
+			out.print("<table class='display stylized' id='oslinktable'>");
+			out.print("<thead>");
+			out.print("<tr class='thfcColor'>");
+			out.print("<td>编号</td>");
+			out.print("<td>操作系统</td>");
+			out.print("<td>版本</td>");
+			out.print("<td> 安装虚拟机数</td>");
+			out.print("<td>操作</td>");
+			out.print("</tr>");
+			out.print("</thead>");
+			out.print("<tbody id='oslinkTbody'>");
+			for (int i=0;i<oslinkLength;i++)
+			{
+					SysInfoBean sbean=sysinfo.get(i);
+					OSLinkNumBean obean=oslinkList.get(i);
+					int dd=i%2;
 
+					out.print("<tr class='trfcColor"+(i%2+1)+"'>");
+					out.print("<td>"+sbean.getSystemid()+"</td>");
+					out.print("<td>"+sbean.getName()+"</td>");
+					out.print("<td>"+sbean.getVersion()+"</td>");
+					out.print("<td>"+obean.getNumber()+"</td>");
+					out.print("<td><a class='table-a' href='javascript:void(0)' onclick='manager.deleteVMOS("+sbean.getSystemid()+",this)'>删除</a></td>");
+					out.print("</tr>");
+			}
+			out.print("</tbody></table>");
+		//}
+	 %>
+	 </fieldset>
+	 <!--  这里虽然是表单post提交，但是在mfunctions.js中 initUI()中屏蔽掉了，自己替换一个ajax提交 -->
+	 <%
+			out.print("<fieldset><legend>添加一个系统</legend>");
+			out.print("<form id='nOsform' name='nOsform' method='post' enctype='multipart/form-data' action='ajaxAddNewOSAction.action'>");
+			out.print("<table class='osaddNewTable'>");
+			out.print("<tr>");
+			out.print("<td>系统名称</td>");
+			out.print("<td><input type='text' id='nOsName' name='nOsName' /></td>");
+			out.print("<td>版本</td>");
+			out.print("<td><input type='text' id='nOsVersion' name='nOsVersion' /></td>");
+			out.print("<td></td></tr><tr>");
+			out.print("<td>运行图片</td>");
+			out.print("<td><input type='file' id='upload' name='upload' class='osupload'/></td>");
+			out.print("<td>故障图片</td>");
+			out.print("<td><input type='file' id='upload' name='upload' class='osupload_close'/></td>");
+			out.print("<td>");
+			out.print("<input type='submit' class='btn btn-green big' value='添加' onclick='manager.addNewOS();' />");
+			out.print("</td>");
+			out.print("</tr>");
+			out.print("</table>");
+			out.print("</form>");
+			out.print("</fieldset>");
+			out.print("<div id='osaddtarget'></div>");
+	  %>
 	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	</div>
 	

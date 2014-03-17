@@ -2,7 +2,7 @@
 <!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
 <struts>
 
- <package name="struts2" namespace="/" extends="struts-default">  
+ <package name="struts2" namespace="/" extends="struts-default,json-default">  
         <action name="loginAction" class="com.action.loginAction">  
         
             <result name="success" type="redirectAction">
@@ -24,6 +24,24 @@
 		
 		 <action name="exitAction" class="com.action.exitAction">
 			<result name="success">/login.jsp</result>
+		</action>
+		
+		<action name="ajaxAddNewOSAction" class="com.action.ajaxAddNewOSAction">
+				<result name="success" type="json" >
+				<!-- 不需要序列化的元素 -->
+				<param name="excludeProperties">
+						upload,uploadContentType,uploadFileName,nOsName,nOsVersion
+				</param>
+				</result>
+		</action>
+		
+		<action name="ajaxDeleteOSAction" class="com.action.ajaxDeleteOSAction">
+				<result name="success" type="json">
+				<!-- 不需要序列化的元素 -->
+				<param name="excludeProperties">
+				vmid
+				</param>
+				</result>
 		</action>
 		
 		

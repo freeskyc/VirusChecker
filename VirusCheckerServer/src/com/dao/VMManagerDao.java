@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.DBHelper;
+import com.bean.NVMInfoBean;
 import com.bean.OSLinkNumBean;
 import com.bean.SysInfoBean;
+import com.bean.VMInfoBean;
 
 public class VMManagerDao {
 
@@ -174,6 +176,109 @@ public class VMManagerDao {
 			e.printStackTrace();
 		}
 		return r;
+	}
+
+	/*
+	 * 涉及到三个表的查询：vminfo,vmstatus,sysinfo
+	 */
+	public List<VMInfoBean> getAllVMData() {
+		List<VMInfoBean> list=new ArrayList<VMInfoBean>();
+		PreparedStatement prep = null;
+		ResultSet re = null;
+		Connection conn=DBHelper.getConnection();
+		//String sql = "select v.vmid,v.systemid,v.underwork, s.ipadd,s.port,s.runstatus,i.name,i.version from vminfo v,vmstatus s,sysinfo i where v.vmid=s.vmid and i.systemid=v.systemid";
+		String sql = "select v.vmid,v.systemid,v.underwork, s.ipadd,s.port,i.name,i.version from vminfo v,vmstatus s,sysinfo i where v.vmid=s.vmid and i.systemid=v.systemid";
+		try {
+			prep = conn.prepareStatement(sql);
+			re = prep.executeQuery();
+			while (re.next()) {
+				//VMInfoBean bean=new VMInfoBean(re.getInt(1),re.getInt(2),re.getInt(3),re.getString(4),re.getInt(5),re.getInt(6),re.getString(7),re.getString(8));
+				VMInfoBean bean=new VMInfoBean(re.getInt(1),re.getInt(2),re.getInt(3),re.getString(4),re.getInt(5),re.getString(6),re.getString(7));
+				list.add(bean);
+			}
+			conn.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	/*
+	 * 添加虚拟机的话
+	 * 要涉及到两个表
+	 * vminfo： vmid | systemid | underwork  这个表用来看谁在用这个VM
+	 * mstatus：vmid | ipadd | port |runstatus 这个表用来看当前的VM状态
+	 */
+	public long addNewVM(NVMInfoBean bean)
+	{
+		long bl=0;
+		PreparedStatement prep = null;
+		long lastId=0;
+		Connection conn=DBHelper.getConnection();
+		String sql="insert into vminfo(systemid,underwork) values(?,0)";
+		String sql2="insert into vmstatus(vmid,ipadd,port) values(?,?,?)";
+		String sql3="select LAST_INSERT_ID()";
+		try{
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1, bean.getSysid());
+			if (prep.executeUpdate()>0)
+			{
+				prep= conn.prepareStatement(sql3);
+				ResultSet rs = prep.executeQuery(); 
+				if (rs.next()){
+					lastId=rs.getLong(1);
+				}
+				
+				if (lastId>0)
+				{
+					prep= conn.prepareStatement(sql2);
+					prep.setLong(1, lastId);
+					prep.setString(2, bean.getIpadd());
+					prep.setInt(3, bean.getPort());
+					//prep.setInt(4, bean.getRunstatus());
+					if (prep.executeUpdate()>0)
+					{
+						bl=lastId;
+					}
+				}
+			}
+			conn.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			bl=0;
+		}
+		
+		
+		return bl;
+	}
+
+	public boolean deleteVMById(int vmid) {
+		boolean bl=false;
+		PreparedStatement prep = null;
+		Connection conn=DBHelper.getConnection();
+		String sql1="delete from vminfo where vmid=?";
+		String sql2="delete from vmstatus where vmid=?";
+		try{
+			prep = conn.prepareStatement(sql1);
+			prep.setInt(1, vmid);
+			int b=prep.executeUpdate();
+			prep=conn.prepareStatement(sql2);
+			prep.setInt(1, vmid);
+			int c=prep.executeUpdate();
+			if (b>0 && c>0)
+			{
+				bl=true;
+			}
+			conn.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			bl=false;
+		}
+		return bl;
 	}
 	
 	

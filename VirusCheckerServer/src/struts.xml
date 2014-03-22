@@ -44,6 +44,24 @@
 				</result>
 		</action>
 		
+		<action name="ajaxAddNewVMAction" class="com.action.ajaxAddNewVMAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						sysid,ipadd,port,runstatus;
+						</param>
+				</result>
+		</action>
+		
+		<action name="ajaxDeleteVMAction" class="com.action.ajaxDeleteVMAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+								vmid
+						</param>
+				</result>
+		</action>
+		
 		
   </package>
 </struts>    

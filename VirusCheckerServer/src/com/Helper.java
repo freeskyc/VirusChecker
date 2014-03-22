@@ -1,13 +1,26 @@
 package com;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.opensymphony.xwork2.ActionContext;
 
 public class Helper {
+
+	/*
+	 * 虚拟机的配置信息如下：
+	 *   192.168.1.101      xp-32    
+	 */
+	
 	
 	public static String uidSession="uid";
 	public static String permissionSession="permission";
+	public static int vmstatusgetfail = 2;
+	public static String[] vmstatusInfo={"运行中","闲置中","关闭中","获取失败","暂停中","切换中"};
+	public static String[] vmscolorInfo={"#93BB3A","#BCEE68","#acaaa9","#fa1d1d","#EEC900","#329ECC" };
 	
 	public static int getUIDSession()
 	{
@@ -33,5 +46,73 @@ public class Helper {
     		
     	}
     	return pid;
+	}
+
+	/*
+	 *  用命令去实时获取各个虚拟机的状态
+	 *  用findStatusFormMsg() 去从返回结果中获取状态
+	 */
+	public static List<Integer> getAllRunVMStatus() {
+		List<Integer> list=new ArrayList<Integer>();
+		String cmdWin32="xm list";
+		Process p;
+		try {
+			p = Runtime.getRuntime().exec(cmdWin32);
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(p.getInputStream()));
+			
+			//等待运行结束
+			p.waitFor();
+			
+			String msg = null;
+			int count=0;
+			int status=2;
+			
+			//读取返回结果，前2行都是 固定的 ，不要
+			while ((msg = br.readLine()) != null)
+			{
+				count++;
+				if (count<=2)
+				{
+					continue;
+				}
+				status=2;
+				status=findStatusFormMsg(msg);
+				list.add(status);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	/*   从结果中获取状态
+	  		r – 运行      0
+			b – 阻塞     1
+			p – 暂停     4
+			s – 关闭      2 
+			c – 崩溃      2
+			d – 垂死     2
+	 */
+	public static int findStatusFormMsg(String msg)
+	{
+		int result=3;
+		if (msg.lastIndexOf('r')>=0 )
+		{
+			result=0;
+		}
+		else if (msg.lastIndexOf('b')>=0)
+		{
+			result=1;
+		}
+		else if (msg.lastIndexOf('p')>=0)
+		{
+			result=4;
+		}
+		else
+		{
+			result=2;
+		}
+		return result;
 	}
 }

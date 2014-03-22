@@ -149,6 +149,7 @@ VManager = function() {
 	 */
 	searchSysOsInfo = function(sysid) {
 		var length = nowSysVMInfo.length;
+		//alert(" "+length);
 		for ( var i = 0; i < length; i++) {
 			var vms = nowSysVMInfo[i];
 			if (vms.sysid == sysid) {
@@ -178,21 +179,7 @@ VManager = function() {
 
 	
 	
-	/* 所有的虚拟机，管理员用 */
-	VMRunSystem = function() {
-		this.sysid = 0;
-		this.sysname = "";
-		this.sysversion = "";
-		this.sysurl = "";
-		this.init = function(sysid, sysname, sysversion, sysurl) {
-			this.sysid = sysid;
-			this.sysname = sysname;
-			this.sysversion = sysversion;
-			this.sysurl = sysurl;
-		};
-
-		this.linkNumber = 0;
-	};
+	
 	
 	// 虚拟机管理模块
 	var nowSysVMInfo = new Array();// 所有虚拟机系统内容-Manager
@@ -210,6 +197,115 @@ VManager = function() {
 		$('.dyosselect').html(str);
 
 	}
+	
+/************************************************************
+ * 
+ * 虚拟机管理模块用到的函数，变量
+ * 
+ * 
+ ***********************************************************/
+	
+	var vmstatusInfo = new Array();// 虚拟机状态文本集合
+	var vmstinfoColor = new Array();// 虚拟机状态颜色集合
+	
+	/* 
+	 * 添加虚拟机状态文本颜色 
+	 */
+	this.addStatusInfo = function(info, color) {
+		vmstatusInfo.push(info);
+		vmstinfoColor.push(color);
+	}
+
+	/*
+	 *  初始化系统这个list -> NowSysVMInfo
+	 */
+	this.addNowSysVMInfo = function(sysid, sysname, sysversion, sysurl) {
+		var vms = new VMRunSystem();
+		vms.init(sysid, sysname, sysversion, sysurl);
+		nowSysVMInfo.push(vms);
+	}
+	
+	/*
+	 *  addNowSysVMInfo的辅助函数
+	 *  初始化一个系统
+	 */
+	VMRunSystem = function() {
+		this.sysid = 0;
+		this.sysname = "";
+		this.sysversion = "";
+		this.sysurl = "";
+		this.init = function(sysid, sysname, sysversion, sysurl) {
+			this.sysid = sysid;
+			this.sysname = sysname;
+			this.sysversion = sysversion;
+			this.sysurl = sysurl;
+		};
+
+		this.linkNumber = 0;
+	};
+	
+	/*
+	 * 新增虚拟机，远程
+	 */
+	this.addNewVM = function() {
+		var url = "ajaxAddNewVMAction.action";
+		var sysid = $(".jq_chosenV").val();
+		var ipadd = $("#nVmIp").val();
+		var port = $('#nVmPort').val();
+		var runstatus = $(".rstatusSelect").val();
+		// alert(sysid+"d"+runstatus);
+
+		if (ipadd == "" || port == "") {
+			alert('必要数据不能为空!');
+			return;
+		}
+
+		var data = "sysid=" + sysid + "&ipadd=" + ipadd + "&port=" + port
+				+ "&runstatus=" + runstatus;
+		var callback = function(value) {
+			if (value.message != "0") {
+				var vmid = value.message;
+				var str = "";
+				var vms = searchSysOsInfo(sysid);
+				//alert(vms);
+				str += "<tr class='trfcColor3'>";
+				str += "<td>" + vmid + "</td>";
+				str += "<td>" + vms.sysname + "</td>";
+				str += "<td>" + vms.sysversion + "</td>";
+				str += "<td>" + ipadd + "</td>";
+				str += "<td>" + port + "</td>";
+				str += "<td>/</td>";
+				str += "<td>" + vmstatusInfo[runstatus] + "</td>";
+				str += "<td><a class='table-a' href='javascript:void(0)' onclick='manager.deleteVM("
+						+ vmid + ",this)'>删除</a></td>";
+				str += "</tr>";searchSysOsInfo
+
+				$("#VMManagerListTbody").append(str);
+
+			} else {
+				alert("添加失败");
+			}
+		};
+		ajaxSendInfo(url, data, callback);
+	}
+	
+	/*
+	 *  删除虚拟机
+	 */
+	this.deleteVM = function(vmid, object) {
+		var url = "ajaxDeleteVMAction.action";
+		var data = "vmid=" + vmid;
+		var callback = function(value) {
+			if (value.message == "1") {
+				$(object).closest("tr").remove();
+
+			} else {
+				alert("删除失败");
+			}
+		};
+		ajaxSendInfo(url, data, callback);
+	}
+
 	
 	
 };

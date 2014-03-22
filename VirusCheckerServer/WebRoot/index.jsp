@@ -126,9 +126,153 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 	</div>
 
-	<div id="tab-vmdetail" class="wrapper minsize">
 
-	</div>
+
+
+
+
+
+
+<%
+//把一些公共的东东放到这里：
+//sysinfo
+List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
+int l=0;
+int uvmoslistLength=0;
+if (sysinfo!=null )
+{	
+	l=sysinfo.size();
+}
+
+//vminfoblist
+List<VMInfoBean> vminfoblist=(List<VMInfoBean>)request.getAttribute("allvmdata");
+
+//运行状态的集合
+String runStringS="<select class='rstatusSelect'><option value='0'>运行中</value><option value='1'>关闭中</value><option value='2'>故障中</value><option value='3'>维护中</value></select>";
+
+//osOptions是操作系统OS的集合
+String osOptions="";
+for (int i=0;i<l;i++){
+	SysInfoBean svm=sysinfo.get(i);
+	osOptions+="<option value='"+svm.getSystemid()+"'>"+svm.getName()+" "+svm.getVersion()+"</option>";
+}
+
+//初始化虚拟机们的信息 -> NowSysVMInfo这个list中
+for (int i=0;i<l;i++)
+{
+	SysInfoBean tmp=sysinfo.get(i);
+	out.print("<script>manager.addNowSysVMInfo("+tmp.getSystemid()+",'"
+	+tmp.getName()+"','"+tmp.getVersion()+"','"+tmp.getImgurl()+"')</script>");
+}
+
+//初始化虚拟机们的状态
+String[] vmstinfo=(String[])request.getAttribute("vmstatus");
+String[] vmstcolor=(String[])request.getAttribute("vmclinfo");
+int le=vmstinfo.length;
+for (int i=0;i<le;i++)
+{
+	out.print("<script>manager.addStatusInfo('"+vmstinfo[i]+"','"+vmstcolor[i]+"')</script>");
+}
+
+
+ %>
+
+
+
+	<div id="tab-vmdetail" class="wrapper minsize">
+		<fieldset>
+			<legend>所有虚拟机状态</legend>
+				<table class='display stylized' id='vmmanagetable'>
+					<thead>
+						<tr class='thfcColor'>
+							<td>编号</td>
+							<td>操作系统</td>
+							<td>版本</td>
+							<td>IP地址</td>
+							<td>端口</td>
+							<td>使用人员ID</td>
+							<td>运行状态</td>
+							<td>操作</td>
+						</tr>
+						</thead>
+			
+	 				<tbody id='VMManagerListTbody'>
+	 				<%
+	 				
+					int size=0;
+					if (vminfoblist!=null)
+					{
+						size=vminfoblist.size();
+					}
+					for (int i=0;i<size;i++)
+					{
+						VMInfoBean item=vminfoblist.get(i);
+						int dd=i%2;
+						out.print("<tr class='trfcColor"+(i%2+1)+"'>");
+						out.print("<td>"+item.getVmid()+"</td>");
+						out.print("<td>"+item.getOsname()+"</td>");
+						out.print("<td>"+item.getOsversion()+"</td>");
+						out.print("<td>"+item.getIpadd()+"</td>");
+						out.print("<td>"+item.getPort()+"</td>");
+						
+						//是哪个用户再使用？
+						if (item.getUnderwork()==0)
+						{
+							out.print("<td>/</td>");
+						}
+						else
+						{
+							out.print("<td>"+item.getUnderwork()+"</td>");
+						}
+						out.print("<td>"+item.getRunstatusInfo()+"</td>");
+						out.print("<td><a class='table-a' href='javascript:void(0)' onclick='manager.deleteVM("+item.getVmid()+",this)'>删除</a></td>");
+						out.print("</tr>");
+					}
+	 				 %>
+					</tbody>
+			</table>
+			</fieldset>
+
+
+			<fieldset><legend>添加一台虚拟机</legend>
+					<table class='vmaddNewTable'>
+						<tr>
+						<td>操作系统</td>
+						<td>
+						<select class='jq_chosenV dyosselect' >
+								<% 
+								out.print(osOptions);//获取OS 
+								%>
+						</select>
+						</td>
+						<td>IP地址</td>
+						<td><input type='text' id='nVmIp' name='nVmip' /></td>
+						<td>端口</td>
+						<td><input type='text' id='nVmPort' name='nVmPort' /></td>
+						<td>运行状态</td>
+						<td>
+						<%
+						out.print(runStringS); //运行状态 
+						%>
+						</td>
+						<td>
+						<input type='button' class='btn btn-green big' value='添加' onclick='manager.addNewVM();' />
+						</td>
+						</tr>
+						</table>
+						</fieldset>
+</div>
+
+
+
+
+
+
+
+
+
+
+
 
 	<div id="tab-vmos" class="wrapper minsize">
 		<fieldset><legend>已有的系统如下</legend>
@@ -136,7 +280,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		//为了获得systemid 对应 的number
 		List<OSLinkNumBean> oslinkList=(List<OSLinkNumBean>)request.getAttribute("oslink"); 
 		//system的各个info
-		List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
+		//List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
 		
 		int oslinkLength=0;
 		if (oslinkList!=null)

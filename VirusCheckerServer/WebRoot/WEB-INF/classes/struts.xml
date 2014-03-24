@@ -62,6 +62,14 @@
 				</result>
 		</action>
 		
+		<action name="ajaxManagerUserVMNumberAction" class="com.action.ajaxManagerUserVMNumberAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						sysid,number
+						</param>
+				</result>
+		</action>
 		
   </package>
 </struts>    

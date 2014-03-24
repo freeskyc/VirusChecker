@@ -207,7 +207,7 @@ public class VMManagerDao {
 	 * 添加虚拟机的话
 	 * 要涉及到两个表
 	 * vminfo： vmid | systemid | underwork  这个表用来看谁在用这个VM
-	 * mstatus：vmid | ipadd | port |runstatus 这个表用来看当前的VM状态
+	 * vmstatus：vmid | ipadd | port |runstatus 这个表用来看当前的VM状态
 	 */
 	public long addNewVM(NVMInfoBean bean)
 	{
@@ -279,6 +279,52 @@ public class VMManagerDao {
 			bl=false;
 		}
 		return bl;
+	}
+
+	public String getShortUserVMInfo(int uid) {
+			PreparedStatement prep = null;
+			ResultSet re = null;
+			String res= null;
+			Connection conn=DBHelper.getConnection();
+			String sql = "select os from usrvminfo";
+			try {
+				prep = conn.prepareStatement(sql);
+				re = prep.executeQuery();
+				if (re.next()) {
+					res=re.getString(1);
+				}
+				conn.close();
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			return res;
+	}
+
+	public boolean updateUserVMNumber(String rest, int sysid,int flag) {
+		PreparedStatement prep = null;
+        boolean res=false;
+		Connection conn=DBHelper.getConnection();
+		String sql = "";
+		if (flag == 0){
+			sql = "update usrvminfo set os=? where id=?";
+		}else{
+			 sql = "insert into  usrvminfo(os,id)  values(?,?)";
+		}
+		
+		try {
+			prep = conn.prepareStatement(sql);
+			prep.setString(1, rest);
+			prep.setInt(2, sysid);
+			if (prep.executeUpdate()>0)
+			{
+				res=true;
+			}
+			conn.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+			res=false;
+		}
+		return res;
 	}
 	
 	

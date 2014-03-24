@@ -37,8 +37,15 @@ public class indexAction implements Action {
 				List oslink=work.getAllLinkOS();			
 				request.setAttribute("oslink",oslink);
 				
+				//所有的sysinfo表的信息
+				//元素是：com.bean.SysInfoBean
 				List syslist=work.getAllVMSystemData();
 				request.setAttribute("sysinfo", syslist);
+				
+				//os 和 vm 的link number 关系信息，systemid - number 这样子映射
+				//元素是：com.bean.SidVMLinkNumberInfo
+				List SidVMNumberInfoList=work.getShortUserVMInfo(uid);
+				request.setAttribute("SidVMNumberInfoList", SidVMNumberInfoList);
 				
 				//设置下虚拟机的所有信息，当然status是单独设置的
 				List<VMInfoBean> avmdata=(List<VMInfoBean>)work.getAllVMData();

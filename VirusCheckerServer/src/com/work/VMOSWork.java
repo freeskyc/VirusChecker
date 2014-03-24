@@ -8,6 +8,7 @@ import java.util.List;
 import com.DBHelper;
 import com.Helper;
 import com.bean.NVMInfoBean;
+import com.bean.SidVMNumberInfo;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
 import com.dao.VMManagerDao;
@@ -157,6 +158,147 @@ public class VMOSWork {
 	public boolean deleteVMById(int vmid) {
 		VMManagerDao dao=new VMManagerDao();
 		return dao.deleteVMById(vmid);
+	}
+
+	/*
+	 * 返回一个记录 ：systemid - number 的list
+	 */
+	public List getShortUserVMInfo(int uid) {
+			VMManagerDao dao=new VMManagerDao();
+			String res=dao.getShortUserVMInfo(uid);
+			//假设res 是 1-1,2-1,3-1
+			if (res!=null)
+			{
+				try{
+					List list=new ArrayList<SidVMNumberInfo>();
+					String[] pt=res.split(",");
+					int length=pt.length;
+					for (int i=0;i<length;i++)
+					{
+						String[] pb=pt[i].split("-");
+						if (pt[i]==null || pt[i].equals(""))
+						{
+							continue;
+						}
+						SidVMNumberInfo ss=new SidVMNumberInfo(Integer.parseInt(pb[0]),Integer.parseInt(pb[1]));
+						list.add(ss);
+					}
+					return list;
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					return null;
+				}
+			}
+			else
+			{
+				return null;
+			}
+	}
+
+	public boolean changeUserVMNumber(int sysid, int number, int uid) {
+			VMManagerDao dao=new VMManagerDao();
+			String info=dao.getShortUserVMInfo(sysid);
+			System.out.println("change user vm num 's info:"+info);
+			if (info==null || info.equals(""))
+			{
+					return dao.updateUserVMNumber(sysid+"-"+number, sysid,1);
+			}
+			else
+			{
+				String target=sysid+"-";
+				int index=info.indexOf(target);
+				String rest="";
+				
+				if(index > 0){
+						String[] pb;
+						String up;
+						if(index-1>=0)
+						{
+							up=info.substring(0,index-1);	
+						}
+						else
+						{
+							up="";
+						}
+					
+						String back=info.substring(index);
+						//System.out.println("up!"+up);
+						//System.out.println("back!"+back);
+						int bindex=back.indexOf(",");
+						//System.out.println("bindex"+bindex);
+						if (bindex<0)
+						{
+							pb=back.split("-");
+						}
+						else
+						{
+							String tmp=back.substring(0,bindex);
+							back=back.substring(bindex);
+							System.out.println("newback!"+back);
+							pb=tmp.split("-");
+						}
+						
+						int n=Integer.parseInt(pb[1]);
+						n=n+number;
+						//System.out.println("n="+n+",pb[0]="+pb[1]);
+						if (n<=0)
+						{
+							if (bindex>=0)
+							{
+								rest=up+back;
+							}
+							else
+							{
+								rest=up;
+							}
+						}
+						else
+						{
+							if (bindex>=0)
+							{
+								if (!up.equals(""))
+								{
+									rest=up+","+sysid+"-"+n+back;
+								}
+								else
+								{
+									rest=sysid+"-"+n+back;
+								}
+							}
+							else
+							{
+								if (!up.equals(""))
+								{
+									rest=up+","+sysid+"-"+n;
+								}
+								else
+								{
+									rest=sysid+"-"+n;
+								}
+							}
+						}
+						
+						return dao.updateUserVMNumber(rest, sysid,0);
+					
+				}
+				else
+				{
+					if (number<0)
+					{
+						return false;
+					}
+					else 
+					{
+						rest=info+","+sysid+"-"+number;
+						return dao.updateUserVMNumber(rest, sysid,0);
+					}
+				}
+				
+			}
+			
+			
 	}
 
 	

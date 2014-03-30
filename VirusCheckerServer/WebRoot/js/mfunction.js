@@ -362,7 +362,7 @@ VManager = function() {
 	 *  添加新的虚拟机sid-number 的info
 	 */
 	this.addNowUserOwnSidVMNumberInfo = function(sysid, number) {
-		var vms = new NowUserOwnSidVMNumberInfo();
+		var vms = new this.NowUserOwnSidVMNumberInfo();
 		vms.init(sysid, number);
 		nowUserOwnSIdVMNumberInfoList.push(vms);
 	}
@@ -373,6 +373,7 @@ VManager = function() {
 	this.addNewUserOS = function() {
 		var sysid = $(".jq_chosen").val();
 		var nowUserOwnSIdVMNumberInfoListLength = nowUserOwnSIdVMNumberInfoList.length;
+		alert("nowUserOwnSIdVMNumberInfoListLength is:"+nowUserOwnSIdVMNumberInfoListLength);
 		var i = 0;
 		for (i = 0; i < nowUserOwnSIdVMNumberInfoListLength; i++) {
 			var vms = nowUserOwnSIdVMNumberInfoList[i];
@@ -425,13 +426,19 @@ VManager = function() {
 				str += "</table>";
 				str += "</div>";
 				str += "</div>";
-				$("#VMManagerListDiv").append(str);
 
-				// alert('添加成功');
+				str +="<script>manager.addNowUserOwnSidVMNumberInfo("+osid+","+ownnumber+")</script>"; 
+				 alert('添加成功')
+				 
+				$("#VMManagerListDiv").append(str);
+				
+				;
 			} else {
 				alert('添加失败');
 			}
 		};
+		alert("sysid = "+sysid+", number = "+number);
+		
 		this.addUserOSRequest(sysid, number, callback);
 	};
 	
@@ -443,6 +450,55 @@ VManager = function() {
 		var data = "sysid=" + sysid + "&number=" + number;
 
 		ajaxSendInfo(url, data, callback);
+	}
+	
+	/*
+	 *  增加或删除虚拟机系统，远程
+	 */
+	this.addOrDeleteUserOS = function(sysid, number, object) {
+		var callback = function(value) {
+			if (value.message == "1") {
+				var pare = $(object).closest(".fcvmslistitem");
+				// pare.remove();
+				var vms = searchUserSIDLinkNumber(sysid);
+				if (vms == null) {
+					alert('处理失败');
+				} else {
+					var n = vms.number + number;
+					if (n <= 0) {
+						nowUserOwnSIdVMNumberInfoList.splice($
+								.inArray(vms, nowUserOwnSIdVMNumberInfoList), 1);
+						pare.remove();
+					} else {
+						vms.number = n;
+						var it = pare.find(".usostabletd");
+						it.html(n);
+					}
+
+					// alert('处理成功');
+				}
+
+			} else {
+				alert('处理失败');
+			}
+		};
+		alert("object is :"+object);
+		
+		this.addUserOSRequest(sysid, number, callback);
+	}
+
+	/*
+	 * sysid-number  通过虚拟机系统
+	 */ 
+	searchUserSIDLinkNumber = function(sysid) {
+		var length = nowUserOwnSIdVMNumberInfoList.length;
+		for ( var i = 0; i < length; i++) {
+			var vms = nowUserOwnSIdVMNumberInfoList[i];
+			if (vms.sysid == sysid) {
+				return vms;
+			}
+		}
+		return null;
 	}
 	
 	

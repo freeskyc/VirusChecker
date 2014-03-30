@@ -146,7 +146,7 @@ for (int i=0;i<sysinfoLength;i++){
 	osOptions+="<option value='"+svm.getSystemid()+"'>"+svm.getName()+" "+svm.getVersion()+"</option>";
 }
 
-//初始化虚拟机们的信息 -> NowSysVMInfo这个list中
+//初始化JS中虚拟机们的信息 -> NowSysVMInfo这个list中
 for (int i=0;i<sysinfoLength;i++)
 {
 	SysInfoBean tmp=sysinfo.get(i);
@@ -154,7 +154,7 @@ for (int i=0;i<sysinfoLength;i++)
 	+tmp.getName()+"','"+tmp.getVersion()+"','"+tmp.getImgurl()+"')</script>");
 }
 
-//初始化虚拟机们的状态
+//初始化JS中虚拟机们的状态
 String[] vmstinfo=(String[])request.getAttribute("vmstatus");
 String[] vmstcolor=(String[])request.getAttribute("vmclinfo");
 int le=vmstinfo.length;
@@ -183,7 +183,7 @@ if(sidVMNumberInfoList != null){
 	</div>
 
 
-
+	<!--  个人机器管理   -->
 	<div id="tab-vmmanager" class="wrapper minsize">
 		<fieldset>
 				<legend>当前您登录的虚拟机</legend>
@@ -211,11 +211,20 @@ if(sidVMNumberInfoList != null){
 							    			}
 							    			SysInfoBean sysitem=sysinfo.get(j);
 							    			String sysurl=sysitem.getImgurl();
+							    			
+							    			System.out.println(sysurl);
+							    			
 							    			String sysname=sysitem.getName();
 							    			String sysversion=sysitem.getVersion();
 							    			str+="<div class='fcvmslistitem'>"; 
 							    			str+="<div class='fcvmslisticon'>";
-							    			str+="<img src='./img/osinfo/"+sysurl+".png' />";
+							    			
+							    			//绝对路径
+							    			//String tmpUrl = application.getRealPath("/");
+							    			//System.out.println(tmpUrl);
+							    			
+							    			//str+="<img src='"+tmpUrl+"/img/osinfo/"+sysurl+".png' />";
+							    			str+="<img src=./img/osinfo/"+sysurl+".png />";
 							    			str+="</div>";
 											    		
 											str+="<div>";
@@ -231,7 +240,7 @@ if(sidVMNumberInfoList != null){
 							    			str+="</div>";
 							    			str+="</div>";
 							    			
-							    			//把一个新的NowUserOwnSidVMNumberInfo存到NowUserOwnSidVMNumberInfoList中
+							    			//JS中：把一个新的NowUserOwnSidVMNumberInfo存到NowUserOwnSidVMNumberInfoList中
 							    			//妹的，名气其太长了也不好，就是当前用户的Systemid 和 vm的数量的一个info
 							    			out.print("<script>manager.addNowUserOwnSidVMNumberInfo("+systemid+","+number+")</script>");
 									}
@@ -261,7 +270,7 @@ if(sidVMNumberInfoList != null){
 
 
 
-
+<!--  虚拟机管理 -->
 	<div id="tab-vmdetail" class="wrapper minsize">
 		<fieldset>
 			<legend>所有虚拟机状态</legend>
@@ -351,7 +360,7 @@ if(sidVMNumberInfoList != null){
 
 
 
-
+<!--  系统管理 -->
 	<div id="tab-vmos" class="wrapper minsize">
 		<fieldset><legend>已有的系统如下</legend>
 	<%

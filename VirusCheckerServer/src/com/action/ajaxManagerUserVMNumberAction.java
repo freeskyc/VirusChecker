@@ -35,7 +35,7 @@ public class ajaxManagerUserVMNumberAction extends ActionSupport
 		if (uid>0)
 		{
 			VMOSWork work=new VMOSWork();
-			System.out.println("uid is :"+uid+"sysid is;"+sysid+"number is:"+number);
+			System.out.println("uid is :"+uid+",sysid is:"+sysid+",number is:"+number);
 			if (work.changeUserVMNumber(sysid, number, uid))
 			{
 				this.message="1";

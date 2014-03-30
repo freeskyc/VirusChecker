@@ -203,7 +203,8 @@ public class VMOSWork {
 			System.out.println("change user vm num 's info:"+info);
 			if (info==null || info.equals(""))
 			{
-					return dao.updateUserVMNumber(sysid+"-"+number, sysid,1);
+					//return dao.updateUserVMNumber(sysid+"-"+number, sysid,1);
+					return dao.updateUserVMNumber(sysid+"-"+number, uid,1);
 			}
 			else
 			{
@@ -280,8 +281,8 @@ public class VMOSWork {
 							}
 						}
 						
-						return dao.updateUserVMNumber(rest, sysid,0);
-					
+						//return dao.updateUserVMNumber(rest, sysid,0);
+						return dao.updateUserVMNumber(rest, uid,0);
 				}
 				else
 				{
@@ -292,7 +293,9 @@ public class VMOSWork {
 					else 
 					{
 						rest=info+","+sysid+"-"+number;
-						return dao.updateUserVMNumber(rest, sysid,0);
+						System.out.println("rest : "+rest);
+						return dao.updateUserVMNumber(rest, uid,0);
+						//return dao.updateUserVMNumber(rest, sysid,0);
 					}
 				}
 				

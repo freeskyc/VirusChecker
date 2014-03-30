@@ -78,6 +78,12 @@ public class ajaxAddNewOSAction extends ActionSupport {
 	@SuppressWarnings("deprecation")
 	private String getSavePath() throws Exception {
 		return ServletActionContext.getRequest().getRealPath(DOWNLOADFILEPATH);
+		/*
+		 * 
+		 * 在servlet里用this.getServletContect().getRealPath()
+			在struts里用this.getServlet().getServletContext().getRealPath()
+			在Action里用ServletActionContext.getRequest().getRealPath();
+		 */
 	}
 
 	
@@ -117,7 +123,9 @@ public class ajaxAddNewOSAction extends ActionSupport {
 				filetempName = uploadFileName[0];
 				
 				System.out.println("上传文件夹: "+savePath);
+				System.out.println(request.getContextPath());
 				//上传文件夹: /home/ouyang/WorkSpace/.metadata/.me_tcat/webapps/VirusCheckerServer/img/osinfo
+				// /root/Workspaces/MyEclipse 10/.metadata/.me_tcat/webapps/VirusCheckerServer/img/osinfo
 				
 				//判断上传文件夹是否存在，不存在就创建一个
 				  File file = new File(savePath);

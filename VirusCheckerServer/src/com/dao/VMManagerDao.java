@@ -99,6 +99,7 @@ public class VMManagerDao {
 			prep = conn.prepareStatement(sql);
 			re = prep.executeQuery();
 			while (re.next()) {
+				//System.out.println("in VMManagerDao.getAllVMSystemData(): url is: "+re.getString(4));
 				list.add(new SysInfoBean(re.getInt(1),re.getString(2),re.getString(3),re.getString(4)));
 			}
 			conn.close();

@@ -178,8 +178,12 @@ if(sidVMNumberInfoList != null){
 
 	</div>
 
+	<!--  样本文件管理 -->
 	<div id="tab-historyfile" class="wrapper minsize">
-
+		<fieldset>
+			<legend>历史记录</legend>
+			<div id="historyRecordDiv"></div>
+		</fieldset>
 	</div>
 
 

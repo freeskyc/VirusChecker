@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.DBHelper;
+import com.bean.HistoryFileInfoBean;
 import com.bean.User;
 
 public class UserManagerDao {
@@ -78,5 +81,28 @@ public class UserManagerDao {
 			e.printStackTrace();
 		}
 		return bl;
+	}
+
+	public List getAllUserHistoryFileInfo(int uid) {
+		List list = new ArrayList<HistoryFileInfoBean>();
+		PreparedStatement prep = null;
+		Connection conn = DBHelper.getConnection();
+		ResultSet re = null;
+		String sql = "select * from usrfileinfo where id=?";
+		try {
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1, uid);
+			re = prep.executeQuery();
+			while (re.next()) {
+				HistoryFileInfoBean bean = new HistoryFileInfoBean(
+						re.getInt(1), re.getInt(2), re.getString(3),re.getString(4),
+						re.getDate(5), re.getInt(6), re.getDate(7));
+				list.add(bean);
+			}
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
 	}
 }

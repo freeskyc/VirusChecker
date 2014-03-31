@@ -502,4 +502,57 @@ VManager = function() {
 	}
 	
 	
+	/************************************************************
+	 * 
+	 *历史样本管理模块
+	 * 
+	 * 
+	 ***********************************************************/
+	
+	/*
+	 *  在initUI()的tab选项中的changeTabToHistoryFile()中调用该函数
+	 */
+	changeHistoryFileTable = function() {
+		var url = "ajaxGetHistoryFileAction.action";
+		var callback = function(value) {
+			if (value.message != "0") {
+				$("#historyRecordDiv").html("历史文件数据获取失败");
+			} else {
+				buildHistoryFileInfoNewTable(value.list);
+			}
+		}
+
+		ajaxSendInfo(url, null, callback);
+	}
+
+	buildHistoryFileInfoNewTable = function(list) {
+		var l = list.length;
+		var str = "<table class='display stylized'><thead><tr class='thfcColor'><td>文件编号</td><td>文件名</td>"
+				+ "<td>上传时间</td><td>病毒标记</td><td>操作时间</td></tr></thead><tbody>";
+		for ( var i = 0; i < l; i++) {
+			var item = list[i];
+			var dd = i % 2 + 1;
+			str += "<tr class='trfcColor" + dd + "'>";
+			str += "<td>" + item["fid"] + "</td>";
+			str += "<td>" + item["bfilename"] + "</td>";
+			str += "<td>" + item["date"].substring(0, 10) + "</td>";
+			if (item["isvirus"] == 2 || item["isvirus"] == "2") {
+				str += "<td>是</td>";
+
+			} else {
+				str += "<td>否</td>";
+			}
+			if (item['ldate'] == null || item['ldate'] == "null") {
+				str += "<td>/</td>";
+			} else {
+				str += "<td>" + item["ldate"].substring(0, 10) + "</td>";
+			}
+			str += "</tr>";
+		}
+		str += "</tbody></table>";
+
+		$("#historyRecordDiv").html(str);
+	}
+	
+	
 };

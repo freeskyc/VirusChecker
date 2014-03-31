@@ -1,6 +1,7 @@
 package com.work;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.struts2.ServletActionContext;
 
@@ -53,6 +54,11 @@ public class UserWork {
 			}
 		}
 		return msg;
+	}
+
+	public List getHistoryFileInfo(int uid) {
+		UserManagerDao dao=new UserManagerDao();
+		return dao.getAllUserHistoryFileInfo(uid);
 	}
 
 	

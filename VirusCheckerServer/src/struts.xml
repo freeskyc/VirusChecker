@@ -71,5 +71,13 @@
 				</result>
 		</action>
 		
+		<action name="ajaxGetHistoryFileAction" class="com.action.ajaxGetHistoryFileAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						</param>
+				</result>
+		</action>
+
   </package>
 </struts>    

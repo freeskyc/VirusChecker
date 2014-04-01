@@ -28,7 +28,44 @@ VManager = function() {
 
 		$("#tabs").tabs();
 		
+		/*样本文件上传模块，ajax截获*/
+		$("#sampleform").submit(
+				function(e) {
+					e.preventDefault();
+					// alert('a');
+					var options = {
+						type : "post",
+						target : '#fcfileMessage',
+						success : function(value) {
+							if (value.message != "no") {
+								
+								alert("success upload...");
+								
+								fileHasSend = true;
+								sendedFileName = value.message;
+								baseFileName = $("#upload").val();
+								$("#fcfileMessage").html("文件已经上传完毕");
+
+								//往historyUploadFileArray push新的文件元素
+								var nfile = new HistoryFile();
+								nfile.init(sendedFileName, baseFileName,
+										getCurrentDate());
+								historyUploadFileArray.push(nfile);
+								
+							} else {
+								$("#fcfileMessage").html("文件上传失败");
+							}
+
+						}
+					};
+					$("#fcfileMessage").html("文件上传中");
+					$('#sampleform').ajaxSubmit(options);
+
+				});
+
+		
 		if (pid == 1) {
+			/*新增OS，ajaxsubmit截获*/
 			$("#nOsform")
 					.submit(
 							function(e) {
@@ -99,7 +136,6 @@ VManager = function() {
 	changeTabToFileCheck = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>开始文件安全监测</h1></div>");
 		rebuildHistoryFileList();
-
 	}
 	
 	changeTabToVMManager = function() {
@@ -554,5 +590,95 @@ VManager = function() {
 		$("#historyRecordDiv").html(str);
 	}
 	
+	/************************************************************
+	 * 
+	 *样本检测管理模块
+	 * 
+	 * 
+	 ***********************************************************/
+	
+	var fileHasSend = false;// 文件是否上传标志
+	var sendedFileName = "";// 选择的服务端文件
+	var baseFileName = "";// 选择文件的原来文件名
+	var selectHistoryStatus = false;// 是否是选择历史文件标志
+	var historyUploadFileArray = new Array();// 历史文件记录
+	
+	/*
+	 *清理文件上传与否消息内容   
+	 */
+	this.clearFCInfo = function() {
+		$("#fcfileMessage").html("");
+		fileHasSend = false;
+	};
+	
+	/*
+	 * 保证文件名不能空
+	 */
+	this.fcAjaxForm = function() {
+
+		var fileName = $("#upload").val();
+		if (fileName == "") {
+			alert("请选择一个文件!");
+			return false;
+		}
+	}
+	
+	/*
+	 * 用户上传的历史文件信息
+	 */
+	HistoryFile = function() {
+		this.bfileName = "";
+		this.fileName = "";
+		this.date;
+		this.init = function(fileName, bfileName, date) {
+			this.fileName = fileName;
+			this.bfileName = bfileName;
+			this.date = date;
+		};
+	};
+	
+	/*
+	 *  获得当前特定时间 
+	 */
+	getCurrentDate = function() {
+		var d = new Date();
+		return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+	};
+	
+	/* process 1 -------- 重构历史文件选择表格 */
+	rebuildHistoryFileList = function() {
+		var size = historyUploadFileArray.length;
+		
+		alert("historyUploadFileArray.length is :"+size);
+		
+		var str = "";
+		if (size <= 0) {
+			str = "没有历史文件";
+		} else {
+			str += "<table class='display stylized' id='historyFileTable'><thead class='thfcColor'><tr><td>序号</td>文件名<td></td><td>上传时间</td><td>操作</td><tr></thead>";
+			str += "<tbody>";
+			for ( var i = 0; i < size; i++) {
+				var dd = i % 2;
+				str += "<tr class='trfcColor" + dd + "'><td>" + (i + 1)
+						+ "</td><td>" + historyUploadFileArray[i].bfileName
+						+ "</td>";
+				str += "<td>" + historyUploadFileArray[i].date + "</td>";
+				str += "<td><input class='chfcheckbox' type='checkbox' onclick='manager.historyFileSelect("
+						+ i + ",this)'/></td></tr>";
+			}
+			str += "</tobdy>";
+			str += "</table>";
+		}
+		$("#fcselectHistoryFileArea").html(str);
+	}
+	
+	/*
+	 * 往historyUploadFileArray添加新的文件
+	 */
+	this.addHistoryFile = function(fileName, bfilename, date) {
+		var file = new HistoryFile();
+		file.init(fileName, bfilename, date);
+		historyUploadFileArray.push(file);
+	}
 	
 };

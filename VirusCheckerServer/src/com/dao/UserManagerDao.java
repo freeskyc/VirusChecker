@@ -10,6 +10,7 @@ import java.util.List;
 import com.DBHelper;
 import com.bean.HistoryFileInfoBean;
 import com.bean.User;
+import com.bean.UsrFileInfo;
 
 public class UserManagerDao {
 	
@@ -101,6 +102,28 @@ public class UserManagerDao {
 			}
 			conn.close();
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public List getHistoryFile(int uid) {
+		List<UsrFileInfo> list = new ArrayList<UsrFileInfo>();
+		PreparedStatement prep = null;
+		Connection conn = DBHelper.getConnection();
+		ResultSet re = null;
+		String sql = "select * from usrfileinfo where id=?";
+		try {
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1, uid);
+			re = prep.executeQuery();
+			while (re.next()) {
+				UsrFileInfo info = new UsrFileInfo(re.getInt(1), re.getInt(2),
+						re.getString(3), re.getString(4), re.getDate(5));
+				list.add(info);
+			}
+			conn.close();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return list;

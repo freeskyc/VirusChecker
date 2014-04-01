@@ -11,6 +11,7 @@ import com.bean.NVMInfoBean;
 import com.bean.SidVMNumberInfo;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
+import com.dao.UserManagerDao;
 import com.dao.VMManagerDao;
 
 public class VMOSWork {
@@ -302,6 +303,11 @@ public class VMOSWork {
 			}
 			
 			
+	}
+
+	public List getHistoryFile(int uid) {
+		UserManagerDao dao=new UserManagerDao();
+		return dao.getHistoryFile(uid);
 	}
 
 	

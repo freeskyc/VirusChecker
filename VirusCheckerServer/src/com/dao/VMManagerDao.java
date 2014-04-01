@@ -327,6 +327,36 @@ public class VMManagerDao {
 		}
 		return res;
 	}
+
+	/*
+	 * 在上传样本文件时候，更新数据库
+	 */
+	public boolean addUsrUploadFile(String fileName, String bFileName, int uid) {
+		PreparedStatement prep = null;
+		boolean bl=false;
+		Connection conn=DBHelper.getConnection();
+		String sql="insert into usrfileinfo(id,filename,bfilename,date) values(?,?,?,?)";
+		try{
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1,uid);
+			prep.setString(2, fileName);
+			prep.setString(3, bFileName);
+			java.util.Date date=new java.util.Date();
+			prep.setDate(4, new Date(date.getTime()));
+			if (prep.executeUpdate()>0)
+			{
+				bl=true;	
+			}
+			conn.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			bl=false;
+		}
+		
+		return bl;
+	}
 	
 	
 }

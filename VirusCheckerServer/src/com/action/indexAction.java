@@ -30,15 +30,10 @@ public class indexAction implements Action {
 			request.setAttribute("vmstatus", Helper.vmstatusInfo);
 			request.setAttribute("vmclinfo", Helper.vmscolorInfo);
 			
-			VMOSWork work=new VMOSWork();
-			
-			//设置用户的历史文件
-			List histroyfileList=work.getHistoryFile(uid);
-			request.setAttribute("histroyfilelist", histroyfileList);
 			
 			if (pid==1)
 			{
-				
+				VMOSWork work=new VMOSWork();
 				List oslink=work.getAllLinkOS();			
 				request.setAttribute("oslink",oslink);
 				

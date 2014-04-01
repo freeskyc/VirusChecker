@@ -3,7 +3,6 @@
 <%@ page language="java" import="com.bean.VMInfoBean"%>
 <%@ page language="java" import="com.bean.SysInfoBean"%>
 <%@ page language="java" import="com.bean.SidVMNumberInfo"%>
-<%@ page language="java" import="com.bean.UsrFileInfo"%>
 
 <%
 	String path = request.getContextPath();
@@ -171,56 +170,12 @@ if(sidVMNumberInfoList != null){
 	sidVMNumberInfoListLength = sidVMNumberInfoList.size();
 }
 
-//初始化historyfilelist
-List<UsrFileInfo> historyFileList=(List<UsrFileInfo>)request.getAttribute("histroyfilelist");
-int hflistLength=historyFileList.size();
-for (int i=0;i<hflistLength;i++)
-{
-	UsrFileInfo info=historyFileList.get(i);
-	out.print("<script>manager.addHistoryFile('"+info.getFileName()+"','"+info.getBfileName()+"','"+info.getDate()+"')</script>");
-}
 
  %>
 
 
 	<div id="tab-filecheck" class="wrapper minsize">
-			<div class="fcwindow">
-					<div id="fccontent">
-					
-									<!--  样本检测第一步！！！ -->
-									<div id="fcp0" class='fcprocess'>
-											<form id="sampleform" name="sampleform" method="post" enctype="multipart/form-data" action='uploadFileAction.action'  >
-											<fieldset>
-												<legend>上传一个可疑文件</legend>
-												<p>
-													<label class="required" for="File">File:</label><br /> <input
-														type="file" class="half"  name="upload" id="upload" onclick="manager.clearFCInfo();"/>
-												</p>
-												<p >
-													<input type="submit" class="btn btn-blue big"  value="上传" onclick="manager.fcAjaxForm();"/> or <input type="reset" class="btn" value="重置" />
-												</p>
-											</fieldset>
-										</form>
-										 
-										<div id="fcfileMessage">
-										</div>
-										
-										<fieldset>
-												<legend>或者选择一个历史文件</legend>
-												<div id="fcselectHistoryFileArea">
-												</div>
-										</fieldset>
-										
-										<br/>
-										<div class='upnextArea'>
-													<!--  <input type="button" class="btn btn-red big" value="上一步" />-->
-													<input type="button" class="btn btn-green big" value="下一步" onclick='manager.fcmoveToSelectVM(0);' />
-										</div>
-								</div>
-								
-								
-					</div>
-			</div>
+
 	</div>
 
 	<!--  样本文件管理 -->

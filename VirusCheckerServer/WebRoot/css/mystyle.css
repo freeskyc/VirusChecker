@@ -123,7 +123,7 @@
 {
 	width:990px;
 	position:relative;
-	/*min-height:400px;*/
+	min-height:400px;
 	float:left;
 }
 
@@ -131,14 +131,15 @@
 {
 	width:990px;
 	position:relative;
-	/*min-height:400px;*/
+	min-height:400px;
 	overflow-x:hidden
 }
 
 #fccontent
 {
 	position:relative;
-	/*overflow-x:hidden;*/
+	width:3960px;
+	overflow-x:hidden;
 }
 
 .vmfreshIcon

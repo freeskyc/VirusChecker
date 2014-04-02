@@ -79,5 +79,14 @@
 				</result>
 		</action>
 
+		<action name="uploadFileAction" class="com.action.uploadFileAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						upload,uploadContentType,uploadFileName
+						</param>
+				</result>
+		</action>
+
   </package>
 </struts>    

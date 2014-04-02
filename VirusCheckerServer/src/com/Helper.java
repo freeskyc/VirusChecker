@@ -15,12 +15,14 @@ public class Helper {
 	 *   192.168.1.101      xp-32    
 	 */
 	
-	
 	public static String uidSession="uid";
 	public static String permissionSession="permission";
 	public static int vmstatusgetfail = 2;
 	public static String[] vmstatusInfo={"运行中","闲置中","关闭中","获取失败","暂停中","切换中"};
 	public static String[] vmscolorInfo={"#93BB3A","#BCEE68","#acaaa9","#fa1d1d","#EEC900","#329ECC" };
+	
+	//用户格式
+	public static int usrfomat=2;
 	
 	public static int getUIDSession()
 	{
@@ -115,4 +117,31 @@ public class Helper {
 		}
 		return result;
 	}
+	
+	/*
+	 * 找元素
+	 */
+	public static int searchInArray(int value,int[] array,int start,int end)
+	{
+		if (start>end)
+		{
+			return -1;
+		}
+		
+		int mid=(start+end)/2;
+		if (value==array[mid])
+		{
+			return mid;
+		}
+		else if (value>array[mid])
+		{
+			return searchInArray(value,array,mid+1,end);
+		}
+		else
+		{
+			return searchInArray(value,array,start,mid-1);
+		}
+	
+	}
+	
 }

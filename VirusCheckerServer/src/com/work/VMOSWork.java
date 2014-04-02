@@ -11,6 +11,8 @@ import com.bean.NVMInfoBean;
 import com.bean.SidVMNumberInfo;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
+import com.bean.VMList;
+import com.dao.UserManagerDao;
 import com.dao.VMManagerDao;
 
 public class VMOSWork {
@@ -302,6 +304,85 @@ public class VMOSWork {
 			}
 			
 			
+	}
+
+	public List getHistoryFile(int uid) {
+		UserManagerDao dao=new UserManagerDao();
+		return dao.getHistoryFile(uid);
+	}
+
+	public List<VMList> getUserVMOS(int uid) {
+		List list = new ArrayList<VMList>();
+		Connection conn = DBHelper.getConnection();
+		try {
+			UserManagerDao dao = new UserManagerDao();
+			String uvm = dao.getUserVMInfo(uid, conn);
+			if (!uvm.equals("")) {
+				String[] uvmp = uvm.split(",");
+
+				//DBHelper.lockTabWithWrite(conn);
+
+				VMManagerDao vdao = new VMManagerDao();
+				ArrayList<VMList> vmlist = vdao.getUseableVM(conn);
+				int vmlength = vmlist.size();
+				int[] index = new int[vmlength];
+				for (int i = 0; i < vmlength; i++) {
+					index[i] = vmlist.get(i).getSystemid();
+				}
+
+				int length = uvmp.length;
+				ArrayList<Integer> updateList = new ArrayList<Integer>();
+				for (int i = 0; i < length; i++) {
+					String[] tp = uvmp[i].split("-");
+					if (tp.length == Helper.usrfomat) {
+						int sysid = Integer.parseInt(tp[0]);
+						int number = Integer.parseInt(tp[1]);
+						int loc = Helper.searchInArray(sysid, index, 0,
+								vmlength - 1);
+						if (loc >= 0) {
+							VMList vmli = vmlist.get(loc);
+							int vmidLength = vmli.getVmidLength();
+							if (vmidLength > number) {
+								// easy menthod
+								ArrayList<Integer> alist = new ArrayList<Integer>();
+								ArrayList<Integer> blist = vmli.getVmid();
+
+								for (int j = 0; j < number; j++) {
+									int abid = blist.get(j);
+									alist.add(abid);
+									updateList.add(abid);
+								}
+								vmli.setVmid(alist);
+							} else {
+								ArrayList<Integer> blist = vmli.getVmid();
+								for (int j = 0; j < vmidLength; j++) {
+									int abid = blist.get(j);
+									updateList.add(abid);
+								}
+							}
+
+							list.add(vmli);
+
+						}
+
+					}
+				}
+
+				vdao.UpdateVMInfo(conn, updateList, uid);
+				//DBHelper.unlockTable(conn);
+				conn.close();
+
+				/*VMList last = new VMList();
+				last.setVmid(updateList);
+				list.add(last);*/
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (conn != null){
+				//DBHelper.unlockTable(conn);
+			}
+		}
+		return list;
 	}
 
 	

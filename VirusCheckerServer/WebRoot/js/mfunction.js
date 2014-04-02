@@ -28,7 +28,55 @@ VManager = function() {
 
 		$("#tabs").tabs();
 		
+		/*样本文件上传模块，ajax截获*/
+		$("#sampleform").submit(
+				function(e) {
+					e.preventDefault();
+					// alert('a');
+					var options = {
+						type : "post",
+						target : '#fcfileMessage',
+						success : function(value) {
+							if (value.message != "no") {
+								
+								alert("success upload...");
+								
+								fileHasSend = true;
+								sendedFileName = value.message;
+								
+								//此处会出现一个诡异的问题：c:\fakepath
+								//出于安全性的考虑，上传文件时屏蔽了真实的本地文件路径，而以“C:\fakepath\”取代之
+								//但是这里不好看，就自己特殊处理下
+								baseFileName = $("#upload").val();
+								baseFileName = baseFileName.replace("C:\\fakepath\\","");
+								
+								alert("sendedFileName is :"+sendedFileName+"bFilename is :"+baseFileName);
+								
+								$("#fcfileMessage").html("文件已经上传完毕");
+
+								//往historyUploadFileArray push新的文件元素
+								var nfile = new HistoryFile();
+								nfile.init(sendedFileName, baseFileName,
+										getCurrentDate());
+								historyUploadFileArray.push(nfile);
+								
+								//往file check div添加新的文件元素
+								rebuildHistoryFileList();
+								
+							} else {
+								$("#fcfileMessage").html("文件上传失败");
+							}
+
+						}
+					};
+					$("#fcfileMessage").html("文件上传中");
+					$('#sampleform').ajaxSubmit(options);
+
+				});
+
+		
 		if (pid == 1) {
+			/*新增OS，ajaxsubmit截获*/
 			$("#nOsform")
 					.submit(
 							function(e) {
@@ -59,7 +107,7 @@ VManager = function() {
 
 											$("#oslinkTbody").append(str);
 
-											nowSysVMInfo.push(vms);
+											nowSysVMInfoList.push(vms);
 											changeUISystemSelect(); //选择项也要更新
 
 										} else {
@@ -83,6 +131,9 @@ VManager = function() {
 		tabFunctions.push(changeTabToVMSPManager);
 		tabFunctions.push(changeTabToVMOSManager);
 		tabFunctions.push(changeTabToHistoryFile);
+		
+		//FileChecker 的 初始化，步骤切换函数
+		this.initFC();
 	}
 	
 	/*
@@ -99,7 +150,6 @@ VManager = function() {
 	changeTabToFileCheck = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>开始文件安全监测</h1></div>");
 		rebuildHistoryFileList();
-
 	}
 	
 	changeTabToVMManager = function() {
@@ -149,7 +199,7 @@ VManager = function() {
 	 * 
 	 ***********************************************************/
 	
-	var nowSysVMInfo = new Array();// 目前在运行的时候用户已经有的虚拟机。
+	var nowSysVMInfoList = new Array();// 目前在运行的时候用户已经有的虚拟机。
 																		//	sysid ，sysname，sysversion，sysurl				
 	/*
 	 * 添加一个新的OS，此处并没有用到AJax技术
@@ -178,7 +228,7 @@ VManager = function() {
 				$(object).closest("tr").remove(); //面板上删除那一行
 				
 				var vms = searchSysOsInfo(sysid);
-				nowSysVMInfo.splice($.inArray(vms, nowSysVMInfo), 1); //从list中删除这一项
+				nowSysVMInfoList.splice($.inArray(vms, nowSysVMInfoList), 1); //从list中删除这一项
 				
 				changeUISystemSelect();
 			} else if (value.message == "2") {
@@ -191,13 +241,13 @@ VManager = function() {
 	}
 	
 	/*
-	 *  addNowSysVMInfo ，往这个nowSysVMInfo里面加入新的元素
+	 *  addNowSysVMInfo ，往这个nowSysVMInfoList里面加入新的元素
 	 * 在index.jsp中，拿到index.action传过来的数据后，调用该函数
 	 */
 	this.addNowSysVMInfo = function(sysid, sysname, sysversion, sysurl) {
 		var vms = new VMRunSystem();
 		vms.init(sysid, sysname, sysversion, sysurl);
-		nowSysVMInfo.push(vms);
+		nowSysVMInfoList.push(vms);
 	}
 	
 	/*
@@ -224,10 +274,10 @@ VManager = function() {
 	 *  从系统中查找特定系统
 	 */
 	searchSysOsInfo = function(sysid) {
-		var length = nowSysVMInfo.length;
+		var length = nowSysVMInfoList.length;
 		//alert(" "+length);
 		for ( var i = 0; i < length; i++) {
-			var vms = nowSysVMInfo[i];
+			var vms = nowSysVMInfoList[i];
 			if (vms.sysid == sysid) {
 				return vms;
 			}
@@ -240,10 +290,10 @@ VManager = function() {
 	 * 在：this.deleteVMOS() 和 this.initUI() 中用到了
 	 */
 	changeUISystemSelect = function() {
-		var l = nowSysVMInfo.length;
+		var l = nowSysVMInfoList.length;
 		var str = "";
 		for ( var i = 0; i < l; i++) {
-			var item = nowSysVMInfo[i];
+			var item = nowSysVMInfoList[i];
 			str += "<option value='" + item.sysid + "'>" + item.sysname + " "
 					+ item.sysversion + "</option>";
 		}
@@ -259,6 +309,7 @@ VManager = function() {
 	 * 
 	 ***********************************************************/
 	// 虚拟机管理模块
+	var vmstatusCollectionList = new Array();// 用户虚拟机运行情况集合
 	
 	var vmstatusInfo = new Array();// 虚拟机状态-文本集合
 	var vmstinfoColor = new Array();// 虚拟机状态-颜色集合
@@ -336,6 +387,34 @@ VManager = function() {
 		ajaxSendInfo(url, data, callback);
 	}
 	
+	/*
+	 *  在index.jsp中，新增元素，维护 vmstatusCollectionList  这个list
+	 */
+	this.addNewRunItem = function(vmid, ipadd, port, runstatus, sysid) {
+		var vms = new VMRunItemStatus();
+		vms.init(vmid, ipadd, port, runstatus, sysid);
+		vmstatusCollectionList.push(vms);
+	};
+	
+	/* 
+	 * vmstatusCollectionList 的元素，所有的虚拟机状态
+	 */
+	VMRunItemStatus = function() {
+		this.sysid = 0;
+		this.vimid = 0;
+		this.runstatus = 0;
+		this.ipadd = "";
+		this.port = 0;
+		this.init = function(vmid, ipadd, port, runstatus, sysid) {
+			this.vmid = vmid;
+			this.ipadd = ipadd;
+			this.port = port;
+			this.runstatus = runstatus;
+			this.sysid = sysid;
+		};
+	};
+
+	
 	/************************************************************
 	 * 
 	 * 个人机器管理模块
@@ -343,7 +422,7 @@ VManager = function() {
 	 * 
 	 ***********************************************************/
 	
-	var nowUserOwnSIdVMNumberInfoList = new Array();// 所有虚拟机信息-Manager
+	var nowUserOwnSIdVMNumberInfoList = new Array();// 所有虚拟机系统-数量对应关系
 
 	
 	/* 
@@ -554,5 +633,287 @@ VManager = function() {
 		$("#historyRecordDiv").html(str);
 	}
 	
+	/************************************************************
+	 * 
+	 *样本检测管理模块
+	 * 
+	 * 
+	 ***********************************************************/
 	
+	var fileHasSend = false;// 文件是否上传标志
+	var sendedFileName = "";// 选择的服务端文件
+	var baseFileName = "";// 选择文件的原来文件名
+	var selectHistoryStatus = false;// 是否是选择历史文件标志
+	var historyUploadFileArray = new Array();// 历史文件记录
+	
+	var fcprocess = 0;// 当前步骤
+	var fcmaxprocess = 4;// 最大步骤数
+	var baseMoveLength = 990;// 步骤移动距离
+	var moveSpeed = 1000;//
+	var fcpArray = new Array();// 步骤切换时，触发函数
+	
+	/*
+	 * 初始化切换步骤的函数
+	 */
+	this.initFC = function() {
+		fcpArray.push(buildVMSelectArea);
+		fcpArray.push(startMonitor);
+		fcpArray.push(rebuildHistoryFileList);
+	};
+	
+	/*
+	 *清理文件上传与否消息内容   
+	 */
+	this.clearFCInfo = function() {
+		$("#fcfileMessage").html("");
+		fileHasSend = false;
+	};
+	
+	/*
+	 * 保证文件名不能空
+	 */
+	this.fcAjaxForm = function() {
+
+		var fileName = $("#upload").val();
+		if (fileName == "") {
+			alert("请选择一个文件!");
+			return false;
+		}
+	}
+	
+	/*
+	 * 用户上传的历史文件信息
+	 */
+	HistoryFile = function() {
+		this.bfileName = "";
+		this.fileName = "";
+		this.date;
+		this.init = function(fileName, bfileName, date) {
+			this.fileName = fileName;
+			this.bfileName = bfileName;
+			this.date = date;
+		};
+	};
+	
+	/*
+	 *  获得当前特定时间 
+	 */
+	getCurrentDate = function() {
+		var d = new Date();
+		var mm = null;
+		var dd = null;
+		if(d.getMonth() + 1 < 10){
+			mm = "0"+(d.getMonth()+1);
+		}else{
+			mm = d.getMonth()+1;
+		}
+		if(d.getDate() < 10){
+			dd = "0"+d.getDate();
+		}else{
+			dd = d.getDate();
+		}
+		return d.getFullYear() + "-" + mm + "-" + dd;
+	};
+	
+	/* process 1 -------- 重构历史文件选择表格 */
+	rebuildHistoryFileList = function() {
+		var size = historyUploadFileArray.length;
+		
+		//alert("historyUploadFileArray.length is :"+size);
+		
+		var str = "";
+		if (size <= 0) {
+			str = "没有历史文件";
+		} else {
+			str += "<table class='display stylized' id='historyFileTable'><thead class='thfcColor'><tr><td>序号</td>文件名<td></td><td>上传时间</td><td>操作</td><tr></thead>";
+			str += "<tbody>";
+			for ( var i = 0; i < size; i++) {
+				var dd = i % 2;
+				str += "<tr class='trfcColor" + dd + "'><td>" + (i + 1)
+						+ "</td><td>" + historyUploadFileArray[i].bfileName
+						+ "</td>";
+				str += "<td>" + historyUploadFileArray[i].date + "</td>";
+				str += "<td><input class='chfcheckbox' type='checkbox' onclick='manager.historyFileSelect("
+						+ i + ",this)'/></td></tr>";
+			}
+			str += "</tobdy>";
+			str += "</table>";
+		}
+		$("#fcselectHistoryFileArea").html(str);
+	}
+	
+	/*
+	 * 往historyUploadFileArray添加新的文件
+	 */
+	this.addHistoryFile = function(fileName, bfilename, date) {
+		var file = new HistoryFile();
+		file.init(fileName, bfilename, date);
+		historyUploadFileArray.push(file);
+	}
+	
+	/* 
+	 * 当历史文件CheckBox选择时触发的函数 
+	 */
+	this.historyFileSelect = function(tid, object) {
+		if ($(object).attr("checked") == "checked") {
+			
+				//清理其他选项的check状态
+				var list = $("#historyFileTable").find(".chfcheckbox");
+				var length = list.length;
+				for ( var i = 0; i < length; i++) {
+					if ($(list[i]).attr("checked")) {
+						$(list[i]).removeAttr("checked");
+					}
+				}
+				;
+	
+				// alert(object);
+	
+				$(object).attr("checked", 'true');
+				var item = historyUploadFileArray[tid];
+				sendedFileName = item.fileName;
+				baseFileName = item.bfileName;
+				selectHistoryStatus = true;
+
+		} else {
+			var list = $("#historyFileTable").find(".chfcheckbox");
+			var length = list.length;
+			for ( var i = 0; i < length; i++) {
+				if ($(list[i]).attr("checked")) {
+					$(list[i]).removeAttr("checked");
+				}
+			}
+			;
+			selectHistoryStatus = false;
+		}
+
+	};
+
+	/*
+	 * 点击下一步
+	 */
+	this.fcmoveToSelectVM = function(index) {
+		if (!fileHasSend && !selectHistoryStatus) {
+			alert("文件未上传!");
+			return;
+		}
+		this.fcnext(index);
+	}
+	
+	/*
+	 * 从网上学习的代码：切换步骤的动画 
+	 */
+	this.fcnext = function(index) {
+		var left = $("#fccontent").css("left");
+		
+		alert(left);
+		
+		var movedis = 0;
+		if (left == "auto") {
+			movedis = -baseMoveLength;
+		} else {
+			var l = left.length;
+			var d = left.substr(0, l - 2);
+			// alert(d+"-"+left);
+			movedis = new Number(d);
+			movedis -= baseMoveLength;
+			// alert(moveid+"ds"+d);
+		}
+		
+		alert("开始动画！");
+		
+		$("#fccontent").animate({
+			left : movedis
+		}, moveSpeed, function() {
+			if (index >= 0) {
+				fcpArray[index]();
+			}
+
+		});
+	};
+	
+	/* 
+	 * process 2 --------构建可用虚拟机列表 
+	 */
+	var fcslitemnumber = 6;// 布局中每行最大显示块数量
+	
+	buildVMSelectArea = function() {
+		var str = "";
+		var length = vmstatusCollectionList.length;
+		var count = 0;
+		
+		alert("vmstatusCollectionList length is : "+length);
+		
+		for ( var i = 0; i < length; i++) {
+			var vmstatus = vmstatusCollectionList[i].runstatus;
+			if (vmstatus > lastStatus) {
+				continue;
+			}
+
+			var vmst = vmstatusCollectionList[i].vmid;
+
+			var osid = vmstatusCollectionList[i].sysid;
+			var size = vmst.length;
+
+			var ositem = findSystemItem(osid);
+
+			if (ositem == null) {
+				continue;
+			}
+
+			var osurl = ositem.sysurl;
+			var osname = ositem.sysname;
+			var osversion = ositem.sysversion;
+
+			count++;
+			if (count % fcslitemnumber == 1) {
+				str += "<div>";
+			}
+
+			str += "<div class='fcvmslistitem'>";
+			str += "<div class='fcvmslisticon'>";
+			str += "<img src='./img/osinfo/" + osurl + ".png' />";
+			str += "</div>";
+
+			str += "<div>";
+			str += "<table id='fccrtable' class='fccrtable'><thead class='mhiden'><tr><td></td><td></td><td></td><td></td><tr></thead>";
+			str += "<tbody>";
+			str += "<tr class='trfcColor1'><td><b>系统</b></td><td>" + osname
+					+ "</td></tr>";
+			str += "<tr class='trfcColor2'><td><b>版本</b></td><td>" + osversion
+					+ "</td></tr>";
+			str += "<tr class='trfcColor1'><td><b>编号</b></td><td class='fcvmid'>"
+					+ vmst + "</td></tr>";
+			str += "<tr class='trfcColor2'><td><b>选择这台</b></td><td><input type='checkbox' class='fcsinput'></td></tr>";
+			// str+="<tr class='trfcColor1
+			// mhiden'><td>"+osid+"</td><td>"+vmst+"</td></tr>";
+			str += "</tobdy>";
+			str += "</table>";
+			str += "</div>";
+			str += "</div>";
+
+			if (count % fcslitemnumber == 0) {
+				str += "<div class='clearB'></div>";
+				str += "</div>";
+			}
+
+		}
+
+		if (count % fcslitemnumber != 0) {
+			str += "<div class='clearB'></div>";
+			str += "</div>";
+		}
+		str += "<div class='clearB heigth20'></div>";
+		str += "<div><span class='checkfileStyle'>需要检查的文件：</span><span>"
+				+ baseFileName + "</span></div>";
+
+		$("#fcRunVMDiv").html(str);
+
+		// initCRTable("fccrtable");
+	};
+	
+	/*process 3*/
+	startMonitor = function(){
+		
+	}
 };

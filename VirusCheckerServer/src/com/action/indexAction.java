@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.ServletActionContext;
 
 import com.bean.VMInfoBean;
+import com.bean.VMList;
 import com.opensymphony.xwork2.Action;
 import com.work.VMOSWork;
 import com.Helper;
@@ -30,10 +31,19 @@ public class indexAction implements Action {
 			request.setAttribute("vmstatus", Helper.vmstatusInfo);
 			request.setAttribute("vmclinfo", Helper.vmscolorInfo);
 			
+			VMOSWork work=new VMOSWork();
+			
+			//设置用户的历史文件
+			List histroyfileList=work.getHistoryFile(uid);
+			request.setAttribute("histroyfilelist", histroyfileList);
+			
+			//设置虚拟机VMList，FileCheck用到
+			List<VMList> list=(List<VMList>)work.getUserVMOS(uid);
+			request.setAttribute("vmdata", list);
 			
 			if (pid==1)
 			{
-				VMOSWork work=new VMOSWork();
+				
 				List oslink=work.getAllLinkOS();			
 				request.setAttribute("oslink",oslink);
 				

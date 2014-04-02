@@ -13,6 +13,7 @@ import com.bean.NVMInfoBean;
 import com.bean.OSLinkNumBean;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
+import com.bean.VMList;
 
 public class VMManagerDao {
 
@@ -326,6 +327,81 @@ public class VMManagerDao {
 			res=false;
 		}
 		return res;
+	}
+
+	/*
+	 * 在上传样本文件时候，更新数据库
+	 */
+	public boolean addUsrUploadFile(String fileName, String bFileName, int uid) {
+		PreparedStatement prep = null;
+		boolean bl=false;
+		Connection conn=DBHelper.getConnection();
+		String sql="insert into usrfileinfo(id,filename,bfilename,date) values(?,?,?,?)";
+		try{
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1,uid);
+			prep.setString(2, fileName);
+			prep.setString(3, bFileName);
+			java.util.Date date=new java.util.Date();
+			prep.setDate(4, new Date(date.getTime()));
+			if (prep.executeUpdate()>0)
+			{
+				bl=true;	
+			}
+			conn.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			bl=false;
+		}
+		
+		return bl;
+	}
+
+	public ArrayList<VMList> getUseableVM(Connection conn) {
+		ArrayList<VMList> list=new ArrayList<VMList>();
+		PreparedStatement prep = null;
+		ResultSet re = null;
+		String sql = "select vminfo.vmid,vminfo.systemid,sysinfo.name,sysinfo.version,sysinfo.imgurl from vminfo,sysinfo where vminfo.underwork=0 and vminfo.systemid=sysinfo.systemid order by vminfo.systemid";
+		try {
+			int psysid=-1;
+			prep = conn.prepareStatement(sql);
+			re = prep.executeQuery();
+			while (re.next()) {
+				int sysid=re.getInt(2);
+				if (psysid!=sysid)
+				{
+					list.add(new VMList(re.getInt(2),re.getString(3),re.getString(4),re.getString(5)));
+				}
+				VMList vlist=list.get(list.size()-1);
+				int e=re.getInt(1);
+				vlist.addVmid(e);	
+			}		
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	
+	}
+
+
+	public void UpdateVMInfo(Connection conn, ArrayList<Integer> updateList,
+			int uid) {
+			PreparedStatement prep = null;
+			String sql = "update vminfo set underwork=? where vmid=?";
+			try {
+				prep = conn.prepareStatement(sql);
+				int length=updateList.size();
+				prep.setInt(1,uid);
+				for (int i=0;i<length;i++)
+				{
+					prep.setInt(2, updateList.get(i));
+					prep.executeUpdate();
+				}	
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
 	}
 	
 	

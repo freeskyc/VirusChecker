@@ -3,6 +3,8 @@
 <%@ page language="java" import="com.bean.VMInfoBean"%>
 <%@ page language="java" import="com.bean.SysInfoBean"%>
 <%@ page language="java" import="com.bean.SidVMNumberInfo"%>
+<%@ page language="java" import="com.bean.UsrFileInfo"%>
+<%@ page language="java" import="com.bean.VMList"%>
 
 <%
 	String path = request.getContextPath();
@@ -24,6 +26,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 
 <link rel="stylesheet" href="css/style.css" type="text/css" />
+<link rel="stylesheet" href="css/mystyle.css" type="text/css" />
+<link rel="stylesheet" href="css/chosen.css" type="text/css" />
+<link rel="stylesheet" href="css/plot.min.css" type="text/css" />
 <script type="text/javascript" SRC="js/jquery-1.8.0.js"></script> 
 <script type="text/javascript" SRC="js/jquery-ui-1.8.16.custom.min.js"></script>
 <script type="text/javascript" SRC="js/mfunction.js"></script>
@@ -125,34 +130,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 <%
 //把一些公共的东东放到这里：
-//sysinfo
-List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
-int sysinfoLength=0;
-if (sysinfo!=null )
-{	
-	sysinfoLength=sysinfo.size();
-}
-
-//vminfoblist
-List<VMInfoBean> vminfoblist=(List<VMInfoBean>)request.getAttribute("allvmdata");
 
 //运行状态的集合
 String runStringS="<select class='rstatusSelect'><option value='0'>运行中</value><option value='1'>关闭中</value><option value='2'>故障中</value><option value='3'>维护中</value></select>";
-
-//osOptions是操作系统OS的集合
-String osOptions="";
-for (int i=0;i<sysinfoLength;i++){
-	SysInfoBean svm=sysinfo.get(i);
-	osOptions+="<option value='"+svm.getSystemid()+"'>"+svm.getName()+" "+svm.getVersion()+"</option>";
-}
-
-//初始化JS中虚拟机们的信息 -> NowSysVMInfo这个list中
-for (int i=0;i<sysinfoLength;i++)
-{
-	SysInfoBean tmp=sysinfo.get(i);
-	out.print("<script>manager.addNowSysVMInfo("+tmp.getSystemid()+",'"
-	+tmp.getName()+"','"+tmp.getVersion()+"','"+tmp.getImgurl()+"')</script>");
-}
 
 //初始化JS中虚拟机们的状态
 String[] vmstinfo=(String[])request.getAttribute("vmstatus");
@@ -163,19 +143,160 @@ for (int i=0;i<le;i++)
 	out.print("<script>manager.addStatusInfo('"+vmstinfo[i]+"','"+vmstcolor[i]+"')</script>");
 }
 
-//初始化systemid和个数number的映射列表
+
+//初始化NowSysVMInfoList-----------系统OS管理模块
+List<SysInfoBean> sysinfo=(List<SysInfoBean>)request.getAttribute("sysinfo");
+int sysinfoLength=0;
+if (sysinfo!=null ){	
+	sysinfoLength=sysinfo.size();
+}
+for (int i=0;i<sysinfoLength;i++)
+{
+	SysInfoBean tmp=sysinfo.get(i);
+	out.print("<script>manager.addNowSysVMInfo("+tmp.getSystemid()+",'"
+	+tmp.getName()+"','"+tmp.getVersion()+"','"+tmp.getImgurl()+"')</script>");
+}
+ 
+String osOptions="";//osOptions是操作系统OS的集合,<select> 要用到
+for (int i=0;i<sysinfoLength;i++){
+	SysInfoBean svm=sysinfo.get(i);
+	osOptions+="<option value='"+svm.getSystemid()+"'>"+svm.getName()+" "+svm.getVersion()+"</option>";
+}
+
+
+//初始化nowUserOwnSIdVMNumberInfoList，systemid和个数number的映射列表---------个人机器管理模块
 List<SidVMNumberInfo> sidVMNumberInfoList = (List<SidVMNumberInfo>)request.getAttribute("SidVMNumberInfoList");
 int sidVMNumberInfoListLength = 0;
 if(sidVMNumberInfoList != null){
 	sidVMNumberInfoListLength = sidVMNumberInfoList.size();
 }
 
+//初始化historyfilelist------样本文件管理模块
+List<UsrFileInfo> historyFileList=(List<UsrFileInfo>)request.getAttribute("histroyfilelist");
+int hflistLength=historyFileList.size();
+for (int i=0;i<hflistLength;i++)
+{
+	UsrFileInfo info=historyFileList.get(i);
+	out.print("<script>manager.addHistoryFile('"+info.getFileName()+"','"+info.getBfileName()+"','"+info.getDate()+"')</script>");
+}
+
+//初始化vminfoblist---------虚拟机管理模块
+List<VMInfoBean> vminfoblist=(List<VMInfoBean>)request.getAttribute("allvmdata");
+
+
+//初始化vmstatusCollectionList-----------FileCheck模块
+List<VMList> vmdata=(List<VMList>)request.getAttribute("vmdata");
+
 
  %>
 
 
 	<div id="tab-filecheck" class="wrapper minsize">
-
+			<div class="fcwindow">
+					<div id="fccontent">
+					
+									<!--  样本检测第0步！！！ -->
+									<div id="fcp0" class='fcprocess'>
+											<form id="sampleform" name="sampleform" method="post" enctype="multipart/form-data" action='uploadFileAction.action'  >
+											<fieldset>
+												<legend>上传一个可疑文件</legend>
+												<p>
+													<label class="required" for="File">File:</label><br /> <input
+														type="file" class="half"  name="upload" id="upload" onclick="manager.clearFCInfo();"/>
+												</p>
+												<p >
+													<input type="submit" class="btn btn-blue big"  value="上传" onclick="manager.fcAjaxForm();"/> or <input type="reset" class="btn" value="重置" />
+												</p>
+											</fieldset>
+										</form>
+										 
+										<div id="fcfileMessage">
+										</div>
+										
+										<fieldset>
+												<legend>或者选择一个历史文件</legend>
+												<div id="fcselectHistoryFileArea">
+												</div>
+										</fieldset>
+										
+										<br/>
+										<div class='upnextArea'>
+													<!--  <input type="button" class="btn btn-red big" value="上一步" />-->
+													<input type="button" class="btn btn-green big" value="下一步" onclick='manager.fcmoveToSelectVM(0);' />
+										</div>
+								</div>
+								
+									<!--  样本检测第1步！！！ -->
+									<div id="fcp1" class='fcprocess'> 
+													<fieldset>
+															<legend>请选择要运行的虚拟机</legend>
+															<div id="fcRunVMDiv">
+															
+															</div>
+													</fieldset>
+													<div class='upnextArea'>
+															<input type="button" class="btn btn-blue big" value="刷新虚拟机" onclick='manager.freshFCVM()'/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+															<input type="button" class="btn btn-red big" value="上一步" onclick='manager.fcup(2);'/>&nbsp;&nbsp;&nbsp;&nbsp;
+															<input type="button" class="btn btn-green big" value="开始检测" onclick='manager.beforestartMonitor();' />
+													</div>
+								 </div>
+							
+									<!--  样本检测第2步！！！ -->	
+									<div id="fcp2" class='fcprocess'>
+													<fieldset>
+																<legend>检测状态</legend>
+													<div id="fcMonitorVMDiv">
+													
+													</div>			
+													</fieldset>
+													<div class='upnextArea'>
+														<!--  <input type="button" class="btn btn-blue big" value="上一步" onclick='manager.fcup(-1);' />&nbsp;&nbsp;&nbsp;&nbsp;-->
+														<input type="button" class="btn btn-red big" value="停止检测" onclick="manager.stopMonitor();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+														<input type="button" class="btn btn-green big" value="生成结果" onclick="manager.beforeCreateMonitorReport();" />
+													</div>	
+								  </div> 
+						
+									<!--  样本检测第3步！！！ -->
+									<div id="fcp3" class='fcprocess'>
+														<fieldset>
+																	<legend>检测文件</legend>
+																	<div id="fcReportFileDiv"></div>
+														</fieldset>
+														<fieldset>
+																	<legend>检测结果</legend>
+																	<div id="fcReportDiv"></div>
+																	
+														</fieldset>
+														<fieldset>
+															<legend>风险统计</legend>
+															<div id="fcReportViewDiv">
+																	<!--  <div id="fcReportViewI"></div>-->
+															</div>
+														</fieldset>
+														<fieldset>
+															<legend>比例统计</legend>
+															<div id="fcReportViewDivII">
+																	
+															</div>
+														</fieldset>
+														<fieldset>
+															<legend>可疑文件综合结论</legend>
+															<div id="fcReportFinalDiv">
+																
+															</div>
+														</fieldset>
+														<div class='upnextArea'>
+															<input id="fcIsFileVirusButton" type="button" class="btn btn-orange big" value="标记为病毒" onclick="manager.fcMarkFileIsVirus();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+															<input id="fcRestoreVMButton" type="button" class="btn btn-blue big" value="恢复虚拟机" onclick="manager.restoreFCVMStatus();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+															<input type="button" class="btn btn-green big" value="重新开始" onclick="manager.restartFCMonitor();"/>
+															
+														</div>
+											</div>
+								
+									<div class='clear'></div>
+					
+					</div>
+			</div>
 	</div>
 
 	<!--  样本文件管理 -->
@@ -245,7 +366,7 @@ if(sidVMNumberInfoList != null){
 							    			str+="</div>";
 							    			
 							    			//JS中：把一个新的NowUserOwnSidVMNumberInfo存到NowUserOwnSidVMNumberInfoList中
-							    			//妹的，名气其太长了也不好，就是当前用户的Systemid 和 vm的数量的一个info
+							    			//妹的，名太长了也不好，就是当前用户的Systemid 和 vm的数量的一个info
 							    			out.print("<script>manager.addNowUserOwnSidVMNumberInfo("+systemid+","+number+")</script>");
 									}
 									out.print(str);

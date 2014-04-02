@@ -128,9 +128,10 @@ public class ajaxAddNewOSAction extends ActionSupport {
 				// /root/Workspaces/MyEclipse 10/.metadata/.me_tcat/webapps/VirusCheckerServer/img/osinfo
 				
 				//判断上传文件夹是否存在，不存在就创建一个
+				//记住是mkdirs，而不是mkdir
 				  File file = new File(savePath);
 				  if (!file.exists()) {
-				   file.mkdir();
+				   file.mkdirs();
 				  }
 				  
 				System.out.println("filetempName: "+filetempName);

@@ -14,6 +14,7 @@ import com.bean.OSLinkNumBean;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
 import com.bean.VMList;
+import com.bean.VMRunStatus;
 
 public class VMManagerDao {
 
@@ -196,6 +197,9 @@ public class VMManagerDao {
 			while (re.next()) {
 				//VMInfoBean bean=new VMInfoBean(re.getInt(1),re.getInt(2),re.getInt(3),re.getString(4),re.getInt(5),re.getInt(6),re.getString(7),re.getString(8));
 				VMInfoBean bean=new VMInfoBean(re.getInt(1),re.getInt(2),re.getInt(3),re.getString(4),re.getInt(5),re.getString(6),re.getString(7));
+				
+				System.out.println(re.getInt(1)+" "+re.getInt(2)+" "+re.getInt(3)+" "+re.getString(4)+" "+re.getInt(5)+" "+re.getString(6)+" "+re.getString(7));
+				
 				list.add(bean);
 			}
 			conn.close();
@@ -402,6 +406,26 @@ public class VMManagerDao {
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
+	}
+
+	public VMRunStatus getVMRunStatus(int vmid, Connection conn) {
+		PreparedStatement prep = null;
+		VMRunStatus status=null;
+		ResultSet re = null;
+		////////////////
+		String sql = "select * from vmstatus where vmid=?";
+		try {
+			prep = conn.prepareStatement(sql);
+			prep.setInt(1,vmid);
+			re = prep.executeQuery();
+			if (re.next()) {
+				status=new VMRunStatus(re.getInt(1),re.getString(2),re.getInt(3));
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
 	}
 	
 	

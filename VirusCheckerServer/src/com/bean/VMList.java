@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class VMList {
-	private ArrayList<Integer> vmid;
+	
 	private int systemid;
 	private String sysname;
 	private String sysversion;
 	private String sysurl;
 	
+	private ArrayList<Integer> vmid;
 	private ArrayList<Integer> status;
 	private ArrayList<String> iplist;
 	private ArrayList<Integer> portlist;

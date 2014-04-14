@@ -125,12 +125,15 @@ VManager = function() {
 
 	
 	this.initData = function(){
-		tabFunctions.push(changeTabToIndex);
+		//tabFunctions.push(changeTabToIndex);
 		tabFunctions.push(changeTabToFileCheck);
-		tabFunctions.push(changeTabToVMManager);
+		//tabFunctions.push(changeTabToVMManager);
 		tabFunctions.push(changeTabToVMSPManager);
 		tabFunctions.push(changeTabToVMOSManager);
 		tabFunctions.push(changeTabToHistoryFile);
+		
+		//修正没有更换tab就不显示样本文件的bug
+		rebuildHistoryFileList();
 		
 		//FileChecker 的 初始化，步骤切换函数
 		this.initFC();
@@ -143,20 +146,24 @@ VManager = function() {
 		tabFunctions[index]();
 	}
 	
+	/*
 	changeTabToIndex = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>欢迎使用</h1></div>");
 	}
-
+	 */
+	
 	changeTabToFileCheck = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>开始文件安全监测</h1></div>");
 		rebuildHistoryFileList();
 	}
 	
+	/*
 	changeTabToVMManager = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>虚拟机添加删除管理</h1></div>");
 		// changeSelectItemStyle();
 	}
-
+	 */
+	
 	changeTabToVMSPManager = function() {
 		$("#pagetitle").html("<div class='wrapper'><h1>虚拟机管理</h1></div>");
 	}
@@ -308,9 +315,7 @@ VManager = function() {
 	 * 
 	 * 
 	 ***********************************************************/
-	// 虚拟机管理模块
-	var vmstatusCollectionList = new Array();// 用户虚拟机运行情况集合
-	
+	// 虚拟机管理模块	
 	var vmstatusInfo = new Array();// 虚拟机状态-文本集合
 	var vmstinfoColor = new Array();// 虚拟机状态-颜色集合
 	
@@ -356,7 +361,7 @@ VManager = function() {
 				str += "<td>" + vms.sysversion + "</td>";
 				str += "<td>" + ipadd + "</td>";
 				str += "<td>" + port + "</td>";
-				str += "<td>/</td>";
+				str += "<td>/</td>"; //underwork uid
 				str += "<td>" + vmstatusInfo[runstatus] + "</td>";
 				str += "<td><a class='table-a' href='javascript:void(0)' onclick='manager.deleteVM("
 						+ vmid + ",this)'>删除</a></td>";
@@ -386,34 +391,6 @@ VManager = function() {
 		};
 		ajaxSendInfo(url, data, callback);
 	}
-	
-	/*
-	 *  在index.jsp中，新增元素，维护 vmstatusCollectionList  这个list
-	 */
-	this.addNewRunItem = function(vmid, ipadd, port, runstatus, sysid) {
-		var vms = new VMRunItemStatus();
-		vms.init(vmid, ipadd, port, runstatus, sysid);
-		vmstatusCollectionList.push(vms);
-	};
-	
-	/* 
-	 * vmstatusCollectionList 的元素，所有的虚拟机状态
-	 */
-	VMRunItemStatus = function() {
-		this.sysid = 0;
-		this.vimid = 0;
-		this.runstatus = 0;
-		this.ipadd = "";
-		this.port = 0;
-		this.init = function(vmid, ipadd, port, runstatus, sysid) {
-			this.vmid = vmid;
-			this.ipadd = ipadd;
-			this.port = port;
-			this.runstatus = runstatus;
-			this.sysid = sysid;
-		};
-	};
-
 	
 	/************************************************************
 	 * 
@@ -636,9 +613,95 @@ VManager = function() {
 	/************************************************************
 	 * 
 	 *样本检测管理模块
-	 * 
+	 *涉及到usr的VM + SYS 
 	 * 
 	 ***********************************************************/
+	
+	/***********************用户vm + os *********************************/
+	var usrvmstatusCollectionList = new Array();// 用户虚拟机运行情况集合
+	var usrvmsysCollectionList = new Array();// 用户虚拟机系统集合
+	
+	/*
+	 *  在index.jsp中，新增元素，维护 usrvmstatusCollectionList  这个list
+	 */
+	this.addNewRunItem = function(vmid, ipadd, port, runstatus, sysid) {
+		var vms = new VMRunItemStatus();
+		vms.init(vmid, ipadd, port, runstatus, sysid);
+		usrvmstatusCollectionList.push(vms);
+	};
+	
+	/* 
+	 * usrvmstatusCollectionList 的元素，所有的虚拟机状态
+	 */
+	VMRunItemStatus = function() {
+		this.sysid = 0;
+		this.vimid = 0;
+		this.runstatus = 0;
+		this.ipadd = "";
+		this.port = 0;
+		this.init = function(vmid, ipadd, port, runstatus, sysid) {
+			this.vmid = vmid;
+			this.ipadd = ipadd;
+			this.port = port;
+			this.runstatus = runstatus;
+			this.sysid = sysid;
+		};
+	};
+	
+	/*
+	 * 在index.jsp中，新增元素，维护 usrvmsysCollectionList  这个list
+	 */
+	this.addUsrNewSystem = function(sysid, sysname, sysversion, sysurl) {
+		var vms = new VMRunSystem();
+		vms.init(sysid, sysname, sysversion, sysurl);
+		
+		//alert(sysid+"  "+sysname+"   "+sysversion+"       "+sysurl);
+		
+		usrvmsysCollectionList.push(vms);
+	};
+	
+	// 查找用户虚拟机系统内容
+	findSystemItem = function(sysid) {
+		var length = usrvmsysCollectionList.length;
+		
+		//alert("usrvmsysCollectionList length : "+length);
+		
+		var i = 0;
+		for (i = 0; i < length; i++) {
+			if (usrvmsysCollectionList[i].sysid == sysid) {
+				break;
+			}
+		}
+		if (i < length) {
+			
+			return usrvmsysCollectionList[i];
+		} else {
+			return null;
+		}
+	}
+	
+	/* 
+	 * 查找用户的虚拟机，通过ID 
+	 */
+	findRunVMItemByVmid = function(vmid) {
+		var l = usrvmstatusCollectionList.length;
+		for ( var i = 0; i < l; i++) {
+			var vms = usrvmstatusCollectionList[i];
+			if (vms.vmid == vmid) {
+				return vms;
+			}
+		}
+		return null;
+	};
+	
+	
+	
+	/***********************一堆辅助函数*********************************/
+	
+	
+	var lastStatus = 1;// 运行状态为OK的最大值
+	var runstatusswitchArray = [ "正在关机", "正在开机", "正在恢复" ];
+	
 	
 	var fileHasSend = false;// 文件是否上传标志
 	var sendedFileName = "";// 选择的服务端文件
@@ -661,8 +724,9 @@ VManager = function() {
 		fcpArray.push(rebuildHistoryFileList);
 	};
 	
+
 	/*
-	 *清理文件上传与否消息内容   
+	 *辅助函数：清理文件上传与否消息内容   
 	 */
 	this.clearFCInfo = function() {
 		$("#fcfileMessage").html("");
@@ -670,7 +734,7 @@ VManager = function() {
 	};
 	
 	/*
-	 * 保证文件名不能空
+	 * 辅助函数：保证文件名不能空
 	 */
 	this.fcAjaxForm = function() {
 
@@ -696,7 +760,7 @@ VManager = function() {
 	};
 	
 	/*
-	 *  获得当前特定时间 
+	 *  辅助函数：获得当前特定时间 
 	 */
 	getCurrentDate = function() {
 		var d = new Date();
@@ -715,7 +779,76 @@ VManager = function() {
 		return d.getFullYear() + "-" + mm + "-" + dd;
 	};
 	
-	/* process 1 -------- 重构历史文件选择表格 */
+	/*
+	 * 辅助函数：点击下一步的检查
+	 */
+	this.fcmoveToSelectVM = function(index) {
+		if (!fileHasSend && !selectHistoryStatus) {
+			alert("文件未上传!");
+			return;
+		}
+		this.fcnext(index);
+	}
+	
+	/*
+	 *  辅助函数：下一步
+	 */
+	this.fcnext = function(index) {
+		var left = $("#fccontent").css("left");
+		
+		//alert(left);
+		
+		var movedis = 0;
+		if (left == "auto") {
+			movedis = -baseMoveLength;
+		} else {
+			var l = left.length;
+			var d = left.substr(0, l - 2);
+			// alert(d+"-"+left);
+			movedis = new Number(d);
+			movedis -= baseMoveLength;
+			// alert(moveid+"ds"+d);
+		}
+		
+		//alert("开始动画！");
+		
+		$("#fccontent").animate({
+			left : movedis
+		}, moveSpeed, function() {
+			if (index >= 0) {
+				fcpArray[index]();
+			}
+
+		});
+	};
+	
+	/*
+	 * 辅助函数：上一步
+	 */
+	this.fcup = function(index) {
+		var movedis = 0;
+		var left = $("#fccontent").css("left");
+		if (left == "auto") {
+			movedis = 0;
+		} else {
+			var l = left.length;
+			var d = left.substr(0, l - 2);
+
+			movedis = new Number(d);
+			movedis += baseMoveLength;
+
+		}
+
+		$("#fccontent").animate({
+			left : movedis
+		}, moveSpeed, function() {
+			if (index >= 0) {
+				fcpArray[index]();
+			}
+		});
+	};
+
+	/***********************process 1：重构历史文件选择表格*********************************/
 	rebuildHistoryFileList = function() {
 		var size = historyUploadFileArray.length;
 		
@@ -789,71 +922,31 @@ VManager = function() {
 
 	};
 
-	/*
-	 * 点击下一步
-	 */
-	this.fcmoveToSelectVM = function(index) {
-		if (!fileHasSend && !selectHistoryStatus) {
-			alert("文件未上传!");
-			return;
-		}
-		this.fcnext(index);
-	}
-	
-	/*
-	 * 从网上学习的代码：切换步骤的动画 
-	 */
-	this.fcnext = function(index) {
-		var left = $("#fccontent").css("left");
-		
-		alert(left);
-		
-		var movedis = 0;
-		if (left == "auto") {
-			movedis = -baseMoveLength;
-		} else {
-			var l = left.length;
-			var d = left.substr(0, l - 2);
-			// alert(d+"-"+left);
-			movedis = new Number(d);
-			movedis -= baseMoveLength;
-			// alert(moveid+"ds"+d);
-		}
-		
-		alert("开始动画！");
-		
-		$("#fccontent").animate({
-			left : movedis
-		}, moveSpeed, function() {
-			if (index >= 0) {
-				fcpArray[index]();
-			}
 
-		});
-	};
 	
-	/* 
-	 * process 2 --------构建可用虚拟机列表 
-	 */
+	
+	
+	/***********************process 2：构建可用虚拟机列表*********************************/
 	var fcslitemnumber = 6;// 布局中每行最大显示块数量
 	
 	buildVMSelectArea = function() {
 		var str = "";
-		var length = vmstatusCollectionList.length;
+		var length = usrvmstatusCollectionList.length;
 		var count = 0;
 		
-		alert("vmstatusCollectionList length is : "+length);
+		//alert("usrvmstatusCollectionList length is : "+length);
 		
 		for ( var i = 0; i < length; i++) {
-			var vmstatus = vmstatusCollectionList[i].runstatus;
+			var vmstatus = usrvmstatusCollectionList[i].runstatus;
+			
+			//alert("vmstatus is : "+vmstatus);
 			if (vmstatus > lastStatus) {
-				continue;
+				//continue;
 			}
 
-			var vmst = vmstatusCollectionList[i].vmid;
+			
 
-			var osid = vmstatusCollectionList[i].sysid;
-			var size = vmst.length;
+			var osid = usrvmstatusCollectionList[i].sysid;
 
 			var ositem = findSystemItem(osid);
 
@@ -864,7 +957,12 @@ VManager = function() {
 			var osurl = ositem.sysurl;
 			var osname = ositem.sysname;
 			var osversion = ositem.sysversion;
-
+			var vmid = usrvmstatusCollectionList[i].vmid;
+			var ipadd = usrvmstatusCollectionList[i].ipadd;
+			var port = usrvmstatusCollectionList[i].port;
+			var status =  usrvmstatusCollectionList[i].runstatus;
+			
+			
 			count++;
 			if (count % fcslitemnumber == 1) {
 				str += "<div>";
@@ -883,8 +981,20 @@ VManager = function() {
 			str += "<tr class='trfcColor2'><td><b>版本</b></td><td>" + osversion
 					+ "</td></tr>";
 			str += "<tr class='trfcColor1'><td><b>编号</b></td><td class='fcvmid'>"
-					+ vmst + "</td></tr>";
-			str += "<tr class='trfcColor2'><td><b>选择这台</b></td><td><input type='checkbox' class='fcsinput'></td></tr>";
+					+ vmid + "</td></tr>";
+			
+			//加入对虚拟机的控制，达到：不开机就无法勾选的效果
+			//usrvmstatusCollectionList的元素：vmid, ipadd, port, runstatus, sysid
+			//运行状态的list：vmstatusInfo.push(info);     vmstinfoColor.push(color);
+			
+			str += "<tr class='trfcColor1'><td><b>IP地址<b></td><td>"+ipadd+"</td></tr>";
+			str += "<tr class='trfcColor1'><td><b>端口号<b></td><td>"+port+"</td></tr>";
+			str += "<tr class='trfcColor1'><td><b>运行状态<b></td><td  class='dydrstatus  fcstatus'  style=\"color:"+vmstinfoColor[status]+"\" >"+vmstatusInfo[status]+"</td></tr>";
+			str += "<tr class='trfcColor1 table-a'><td><b>操作</b><td><a  onclick=\"manager.shutdown("+vmid+",this,'"+osurl+"')\"><b>关机</b></a></td></tr>";
+			str += "<tr class='trfcColor1 table-a'><td><b>操作</b><td><a  onclick=\"manager.startVM("+vmid+",this,'"+osurl+"')\"><b>开机</b></a></td></tr>";
+			str += "<tr class='trfcColor1 table-a'><td><b>操作</b><td><a  onclick=\"manager.restartVM("+vmid+",this,'"+osurl+"')\"><b>恢复快照</b></a></td></tr>";
+
+			str += "<tr class='trfcColor2'><td><b>选择这台1</b></td><td><input type='checkbox' class='fcsinput'></td></tr>";
 			// str+="<tr class='trfcColor1
 			// mhiden'><td>"+osid+"</td><td>"+vmst+"</td></tr>";
 			str += "</tobdy>";
@@ -912,8 +1022,383 @@ VManager = function() {
 		// initCRTable("fccrtable");
 	};
 	
-	/*process 3*/
-	startMonitor = function(){
+	/*
+	 *  开机，关机，恢复快照都得获取：虚拟机运行状态
+	 *  查找用户虚拟机运行状态，这是自己设定的：	
+	  		r – 运行      0
+			b – 阻塞     1
+			p – 暂停     4
+			s – 关闭      2 
+			c – 崩溃      2
+			d – 垂死     2
+	 */
+	findRunStatusByVmid = function(vmid) {
+		var l = usrvmstatusCollectionList.length;
+		for ( var i = 0; i < l; i++) {
+			var vms = usrvmstatusCollectionList[i];
+			if (vms.vmid == vmid) {
+				return vms.runstatus;
+			}
+		}
+		return -1;
+	};
+	
+	/*
+	 * 重新设置虚拟机状态
+	 */ 
+	resetRunStatusByVmid = function(vmid, status) {
+		var l = usrvmstatusCollectionList.length;
+		for ( var i = 0; i < l; i++) {
+			var vms = usrvmstatusCollectionList[i];
+			if (vms.vmid == vmid) {
+				vms.runstatus = status;
+				break;
+			}
+		}
+	};
+	
+	/*
+	 * 重新设置虚拟机状态对应的颜色
+	 */
+	changeRunStatusResultStyle = function(rsid, object, imgurl, vmid) {
+		// var otd=$(object).closest(".dydrstatus");
+		var otd = $(object).parent().parent().parent().find(".dydrstatus");
+		otd.css("color", vmstinfoColor[rsid]);
+		otd.html("<b>" + vmstatusInfo[rsid] + "</b>");
 		
+		//alert("vmstatusInfo[rsid]:" +rsid +"      "+ vmstatusInfo[rsid]);
+		
+		changeRunScreenBackground(rsid, object, imgurl, vmid);
+
+	};
+	
+	/*
+	 * 切换图片
+	 */
+	changeRunScreenBackground = function(rsid, object, imgurl, vmid) {
+		var img = $(object).closest("#index-vm-" + vmid).find(".vmosleft");
+		var url = "./img/osinfo/" + imgurl;
+		if (rsid > lastStatus) {
+			url += "_close";
+		}
+		url += ".png";
+		img.css("background", "url(" + url + ")");
 	}
+	
+	/*
+	 * 在切换状态的时候，更改文字如：正在。。。
+	 * var runstatusswitchArray = [ "正在关机", "正在开机", "正在恢复" ];
+	 */
+	changeRunStatusSwicthStyle = function(swicthId, object) {
+		// var otd=$(object).closest(".dydrstatus");
+		var otd = $(object).parent().parent().find(".dydrstatus");
+		otd.css("color", "#9AFF9A");
+		otd.html("<b>" + runstatusswitchArray[swicthId] + "</b>");
+
+	};
+	
+	/*
+	 * VM开机
+	 */
+	this.startVM = function(vmid, object, imgurl) {
+			var nstatus = findRunStatusByVmid(vmid);
+			
+			//alert(nstatus);
+			
+			if (nstatus < 0) {
+				alert('运行状态异常错误');
+				return;
+			} else if (nstatus == 0 || nstatus == 1) {
+				alert('虚拟机已经处于运行状态');
+				return;
+			}
+	
+			var url = "ajaxStartVMAction.action";
+			var data = "id=" + vmid;
+			var callback = function(value) {
+				if (value.message == "-1") {
+					alert("虚拟机-" + vmid + "开机失败");
+				} else {
+					resetRunStatusByVmid(vmid, new Number(value.message)); //切状态
+					changeRunStatusResultStyle(value.message, object, imgurl, vmid);//改颜色
+				}
+			};
+			changeRunStatusSwicthStyle(1, object);//设置过渡状态。。
+			ajaxSendInfo(url, data, callback);
+	};
+	
+	/*
+	 * VM关机
+	 */
+	this.shutdown =  function(vmid, object, imgurl) {
+			var nstatus = findRunStatusByVmid(vmid);
+			
+			if (nstatus < 0) {
+				alert('运行状态异常错误');
+				return;
+			} else if (nstatus == 2) {
+				alert('虚拟机已经处于关闭状态');
+				return;
+			}
+			
+			var url = "ajaxShutdownVMAction.action";
+			var data = "id=" + vmid;
+			var callback = function(value) {
+					if (value.message == "-1") {
+						alert("虚拟机-" + vmid + "关机失败");
+					} else {
+						resetRunStatusByVmid(vmid, new Number(value.message)); //切状态
+						changeRunStatusResultStyle(value.message, object, imgurl, vmid);//改颜色
+					}
+				
+			}
+			
+			changeRunStatusSwicthStyle(0, object);//设置过渡状态。。
+			ajaxSendInfo(url, data, callback);
+			
+	}
+	
+	/*
+	 * VM 恢复快照
+	 */
+	this.restartVM =  function(vmid, object, imgurl) {
+			var nstatus = findRunStatusByVmid(vmid);
+			
+			if (nstatus < 0) {
+				alert('运行状态异常错误');
+				return;
+			} 
+			
+			var url = "ajaxRestartVMAction.action";
+			var data = "id=" + vmid;
+			var callback = function(value) {
+					if (value.message == "-1") {
+						alert(value.message);
+						alert("虚拟机-" + vmid + "恢复快照失败");
+					} else {
+						resetRunStatusByVmid(vmid, new Number(value.message)); //切状态
+						changeRunStatusResultStyle(value.message, object, imgurl, vmid);//改颜色
+					}
+				
+			}
+			
+			changeRunStatusSwicthStyle(2, object);//设置过渡状态。。
+			ajaxSendInfo(url, data, callback);
+			
+	}
+	
+	
+	/***********************process 3：开始监控*********************************/
+	var monitorItemCollectionList = new Array(); // 监控VM '编号' 序列
+	var isMonitorStart = false;// 是否开始监控
+	var monitorProgressCollection = [ "监控中", "运行完毕" ];
+	var lastMonitorProgressStatus = 1;
+	
+	/*
+	 *  Monitor Status Item 
+	 */  
+	MonitorStatusItem = function() {
+		this.vmid = 0;
+		this.mstatus = 0;
+	};
+	
+	/* 在监控前处理内容 */
+	this.beforestartMonitor = function() {
+		var monitorItems = new Array();
+		var tables = $(".fccrtable");
+		var length = tables.length;
+		
+		//一共有length个虚拟机：
+		for ( var i = 0; i < length; i++) {
+			var checkbox = $(tables[i]).find(".fcsinput");
+			if (checkbox.attr("checked") == "checked") {
+				var vmid = $(tables[i]).find(".fcvmid").html();
+				var vmstatus = $(tables[i]).find(".fcstatus").html();
+				for(var j = 0; j < vmstatusInfo.length ; j++) {
+					if(vmstatusInfo[j] == vmstatus){
+						vmstatus = j ;
+						break;
+					}
+				}
+				
+				var mitem = new MonitorStatusItem();
+				mitem.vmid = vmid;
+				mitem.vmstatus = vmstatus;
+				monitorItemCollectionList.push(mitem);
+			}
+		}
+		if (monitorItemCollectionList.length <= 0) {
+			alert("至少选择一台虚拟机!");
+			return;
+		}
+		for(var k = 0 ; k < monitorItemCollectionList.length ; k ++){
+			if(monitorItemCollectionList[k].vmstatus >=  2) {
+				alert("虚拟机vm-"+monitorItemCollectionList[k].vmid+" 状态不为运行或闲置！");
+				return;
+			}
+		}
+
+		buildMoitorVMInfo();
+
+		this.fcnext(1);
+	};
+	
+	/*
+	 * 将被检测的虚拟机ID构成字符串
+	 */ 
+	getMonitorItemStr = function() {
+		var l = monitorItemCollectionList.length;
+		var str = "";
+		if (l > 0) {
+			for ( var i = 0; i < l - 1; i++) {
+				str += (monitorItemCollectionList[i].vmid + ",");
+			}
+			str += monitorItemCollectionList[l - 1].vmid;
+		}
+
+		return str;
+
+	};
+
+	
+	/*
+	 *  构建被检测虚拟机状态列表
+	 */
+	buildMoitorVMInfo = function() {
+		var str = "";
+		var length = monitorItemCollectionList.length;
+		var count = 0;
+		for ( var i = 0; i < length; i++) {
+			var vms = findRunVMItemByVmid(monitorItemCollectionList[i].vmid);
+			var vmst = vms.vmid;
+			var osid = vms.sysid;
+			var size = vmst.length;
+
+			var ositem = findSystemItem(osid);
+
+			if (ositem == null) {
+				continue;
+			}
+
+			var osurl = ositem.sysurl;
+			var osname = ositem.sysname;
+			var osversion = ositem.sysversion;
+
+			count++;
+
+			if (count % fcslitemnumber == 1) {
+				str += "<div>";
+			}
+
+			str += "<div class='fcvmslistitem'>";
+			str += "<div class='fcvmslisticon'>";
+			str += "<img src='./img/osinfo/" + osurl + ".png' />";
+			str += "</div>";
+
+			str += "<div>";
+			str += "<table id='fccrtable' class='fccrtable'><thead class='mhiden'><tr><td></td><td></td><td></td><td></td><tr></thead>";
+			str += "<tbody>";
+			str += "<tr class='trfcColor1'><td><b>系统</b></td><td>" + osname
+					+ "</td></tr>";
+			str += "<tr class='trfcColor2'><td><b>版本</b></td><td>" + osversion
+					+ "</td></tr>";
+			str += "<tr class='trfcColor1'><td><b>编号</b></td><td class='fcvmid'>"
+					+ vmst + "</td></tr>";
+			str += "<tr class='trfcColor2'><td><b>进度</b></td><td id='fcMonitorVMProgress-"
+					+ vmst + "'>" + monitorProgressCollection[0] + "</td></tr>";
+			// str+="<tr class='trfcColor1
+			// mhiden'><td>"+osid+"</td><td>"+vmst+"</td></tr>";
+			str += "</tobdy>";
+			str += "</table>";
+			str += "</div>";
+			str += "</div>";
+
+			if (count % fcslitemnumber == 0) {
+				str += "<div class='clearB'></div>";
+				str += "</div>";
+			}
+
+		}
+
+		if (count % fcslitemnumber != 0) {
+			str += "<div class='clearB'></div>";
+			str += "</div>";
+		}
+		str += "<div class='clearB heigth20'></div>";
+		str += "<div><span class='checkfileStyle'>检查的文件：</span><span>"
+				+ baseFileName + "</span></div>";
+
+		$("#fcMonitorVMDiv").html(str);
+
+	};
+	
+	// 开始监控
+	startMonitor = function() {
+		isMonitorStart = true;
+		ajaxSendStartMoitorSingal();
+	};
+
+	ajaxSendStartMoitorSingal = function() {
+		var url = "ajaxSendStartMoitorSingalAction.action";
+		var data = "vmids=" + getMonitorItemStr() + "&filename="
+				+ sendedFileName;
+		var callback = function(value) {
+			if (value.message != "-1") {
+				var t = new Date();
+				lastFCMonitorTime = t.getTime();
+				// ||||||||||||
+				// alert("start progress at"+lastFCMonitorTime);
+				setTimeout(checkFCMonitorProcess, checkMonitorTimeDis);
+			} else {
+				alert("启动检测失败");
+			}
+
+		};
+
+		ajaxSendInfo(url, data, callback);
+
+	};
+	
+	
+	/*
+	 * 检测，进度获取
+	 */ 
+	checkFCMonitorProcess = function() {
+		// alert('d');
+		var url = "ajaxCheckMonitorFinshedAction.action";
+		var data = "vmids=" + getFCUnfishedMonitorVM();
+		var callback = function(value) {
+			if (value.message != "-1") {
+				var st = value.status;
+				// alert(st);
+				updateMonitorVMProgress(st);
+				var mydate = new Date();
+				var now = mydate.getTime();
+				var lost = checkAllMonitorVMFinished();
+				if (now - lastFCMonitorTime >= maxCheckMonitorTimeDis) {
+					// alert('time out');
+					if (lost > 0) {
+						// alert('time out lost>0');
+						fcTimeoutMonitorEvent();
+					}
+				} else {
+					if (lost > 0) {
+						// alert('again monitor');
+						setTimeout(checkFCMonitorProcess, checkMonitorTimeDis);
+					}
+				}
+			}
+		};
+		ajaxSendInfo(url, data, callback);
+	};
+	
+	/***********************process 4：监控到结束*********************************/
+	// Create Report
+	// var checkMonitorTimeDis=60000;
+	var checkMonitorTimeDis = 30000;
+	var maxCheckMonitorTimeDis = 360000;
+	var lastFCMonitorTime = 0;
+
+	
+	
 };

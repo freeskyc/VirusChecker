@@ -12,6 +12,7 @@ import com.bean.SidVMNumberInfo;
 import com.bean.SysInfoBean;
 import com.bean.VMInfoBean;
 import com.bean.VMList;
+import com.bean.VMRunStatus;
 import com.dao.UserManagerDao;
 import com.dao.VMManagerDao;
 
@@ -214,7 +215,7 @@ public class VMOSWork {
 				int index=info.indexOf(target);
 				String rest="";
 				
-				if(index > 0){
+				if(index >=  0){
 						String[] pb;
 						String up;
 						if(index-1>=0)
@@ -312,36 +313,59 @@ public class VMOSWork {
 	}
 
 	public List<VMList> getUserVMOS(int uid) {
+		Connection conn = DBHelper.getConnection();
+		VMManagerDao vdao = new VMManagerDao();
+		ArrayList<VMList> vmlist = vdao.getUseableVM(conn);
+		return vmlist;
+		
+		/*
 		List list = new ArrayList<VMList>();
 		Connection conn = DBHelper.getConnection();
 		try {
 			UserManagerDao dao = new UserManagerDao();
 			String uvm = dao.getUserVMInfo(uid, conn);
+			
+			System.out.println("getUserVMOS's uvm is : "+uvm);
+			
 			if (!uvm.equals("")) {
-				String[] uvmp = uvm.split(",");
-
 				//DBHelper.lockTabWithWrite(conn);
 
+				//拿到可以用的VM，寻找underwork = 0 的VM，本来underwork = uid！等于0表示没人用。
 				VMManagerDao vdao = new VMManagerDao();
 				ArrayList<VMList> vmlist = vdao.getUseableVM(conn);
 				int vmlength = vmlist.size();
-				int[] index = new int[vmlength];
-				for (int i = 0; i < vmlength; i++) {
-					index[i] = vmlist.get(i).getSystemid();
-				}
 
+				System.out.println("可以用的VM length  is : "+vmlength);
+				
+				//vmidIndex[] 存储能使用的vmid们
+				int[] vmidIndex = new int[vmlength];
+				for (int i = 0; i < vmlength; i++) {
+					vmidIndex[i] = vmlist.get(i).getSystemid();
+					System.out.println("index "+i+": "+vmidIndex[i]);
+				}
+				
+				//把“ 2-1,3-1”分解成：“2-1”+“3-1”
+				String[] uvmp = uvm.split(",");
 				int length = uvmp.length;
+				
 				ArrayList<Integer> updateList = new ArrayList<Integer>();
+				
 				for (int i = 0; i < length; i++) {
 					String[] tp = uvmp[i].split("-");
-					if (tp.length == Helper.usrfomat) {
+					if (tp.length == Helper.usrfomat) {//这个usrfomat == 2，就是sysid-number两个元素
 						int sysid = Integer.parseInt(tp[0]);
 						int number = Integer.parseInt(tp[1]);
-						int loc = Helper.searchInArray(sysid, index, 0,
-								vmlength - 1);
+						int loc = Helper.searchInArray(sysid, vmidIndex, 0,vmlength - 1);
+						
+						System.out.println("loc is "+loc);
+						
 						if (loc >= 0) {
-							VMList vmli = vmlist.get(loc);
-							int vmidLength = vmli.getVmidLength();
+							VMList vmli = vmlist.get(loc); 
+							int vmidLength = vmli.getVmidLength();//一个OS可以对应多个虚拟机，虚拟机个数。比如xp-1，xp-2。。
+							
+							System.out.println("vmli.getVmidLength() is "+vmidLength);
+							
+							//2-1，number就是1，若vmidLength > number，重新设置VMList.Vmid
 							if (vmidLength > number) {
 								// easy menthod
 								ArrayList<Integer> alist = new ArrayList<Integer>();
@@ -367,14 +391,21 @@ public class VMOSWork {
 
 					}
 				}
-
-				vdao.UpdateVMInfo(conn, updateList, uid);
+				//遍历下updatelist
+				System.out.println("遍历下updatelist:");
+				 for(int    i=0;    i<updateList.size();    i++)    {   
+					 Integer    a    =    updateList.get(i);   
+				      System.out.println(a);
+				   }   
+				  
+				//vdao.UpdateVMInfo(conn, updateList, uid);
+				
 				//DBHelper.unlockTable(conn);
 				conn.close();
 
-				/*VMList last = new VMList();
-				last.setVmid(updateList);
-				list.add(last);*/
+				//VMList last = new VMList();
+				//last.setVmid(updateList);
+				//list.add(last);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -383,6 +414,36 @@ public class VMOSWork {
 			}
 		}
 		return list;
+	*/	
+	}
+
+	public void getVMRunStatus(List<VMList> vmlist) {
+		VMManagerDao dao = new VMManagerDao();
+		int length = vmlist.size();
+		Connection conn=DBHelper.getConnection();
+		try {
+			for (int i = 0; i < length; i++) {
+				VMList item=vmlist.get(i);
+				int size=item.getVmidLength();
+				ArrayList<Integer> ilist=item.getVmid();
+				for (int j=0;j<size;j++)
+				{
+					//VMRunStatus 这个bean 包括：vmid,ipadd,port 和 runstatus...
+					//设计出来的目的主要是在运行VM的时候，方便获取这四个数据
+					//其中前三个数据从DB.vmstatus中获取： dao.getVMRunStatus
+					//runstatus 实时获取：Helper.getRunStatusFormCmd(status.getVmid())
+					
+					VMRunStatus status = dao.getVMRunStatus(ilist.get(j), conn);
+					status.setRunstatus(Helper.getRunStatusFormCmd(status.getVmid()));
+					item.addIp(status.getIpadd());
+					item.addPort(status.getPort());
+					item.addStatus(status.getRunstatus());
+				}	
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	

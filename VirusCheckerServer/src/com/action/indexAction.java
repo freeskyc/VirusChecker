@@ -39,7 +39,8 @@ public class indexAction implements Action {
 			
 			//设置虚拟机VMList，FileCheck用到
 			List<VMList> list=(List<VMList>)work.getUserVMOS(uid);
-			request.setAttribute("vmdata", list);
+			work.getVMRunStatus(list);//获取虚拟机的运行状态
+			request.setAttribute("usrvmlist", list);
 			
 			if (pid==1)
 			{

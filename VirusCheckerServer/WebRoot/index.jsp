@@ -89,16 +89,16 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		<!-- Main navigation -->
 		<nav id="menu">
 		<ul>
-			<li><a HREF="#tab-index" onclick='manager.changeTab(0);'>首页</a></li>
-			<li><a HREF="#tab-filecheck" onclick='manager.changeTab(1);'>样本监测</a></li>
-			<li><a HREF="#tab-vmmanager" onclick='manager.changeTab(2);'>个人机器管理</a></li>
-			<li><a HREF="#tab-historyfile" onclick='manager.changeTab(5);'>历史样本</a></li>
+			<!--  <li><a HREF="#tab-index" onclick='manager.changeTab(0);'>首页</a></li> -->
+			<li><a HREF="#tab-filecheck" onclick='manager.changeTab(0);'>样本监测</a></li>
+			<!--   <li><a HREF="#tab-vmmanager" onclick='manager.changeTab(2);'>个人机器管理</a></li> -->
+			<li><a HREF="#tab-historyfile" onclick='manager.changeTab(3);'>历史样本</a></li>
 			<%
 			
 			 if (pid==1)
 			 {
-				 out.print("<li><a HREF='#tab-vmdetail' onclick='manager.changeTab(3);'><b class='manager_tab_style'>虚拟机管理</b></a></li>");
-				 out.print("<li><a HREF='#tab-vmos' onclick='manager.changeTab(4);' ><b  class='manager_tab_style'>系统管理</b></a></li>");
+				 out.print("<li><a HREF='#tab-vmdetail' onclick='manager.changeTab(1);'><b class='manager_tab_style'>虚拟机管理</b></a></li>");
+				 out.print("<li><a HREF='#tab-vmos' onclick='manager.changeTab(2);' ><b  class='manager_tab_style'>系统管理</b></a></li>");
 			 }
 			%>
 		</ul>
@@ -116,17 +116,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	</div>
 	<!-- End of Page title -->
 
-	<div id="tab-index" class="wrapper minsize">
-
-	</div>
-
-
-
-
-
-
-
-
 
 <%
 //把一些公共的东东放到这里：
@@ -138,8 +127,12 @@ String runStringS="<select class='rstatusSelect'><option value='0'>运行中</va
 String[] vmstinfo=(String[])request.getAttribute("vmstatus");
 String[] vmstcolor=(String[])request.getAttribute("vmclinfo");
 int le=vmstinfo.length;
+
+
+
 for (int i=0;i<le;i++)
 {
+	System.out.println("addStatusInfo ing..."+vmstinfo[i]);
 	out.print("<script>manager.addStatusInfo('"+vmstinfo[i]+"','"+vmstcolor[i]+"')</script>");
 }
 
@@ -180,13 +173,50 @@ for (int i=0;i<hflistLength;i++)
 	out.print("<script>manager.addHistoryFile('"+info.getFileName()+"','"+info.getBfileName()+"','"+info.getDate()+"')</script>");
 }
 
-//初始化vminfoblist---------虚拟机管理模块
+//初始化vminfoblist---------虚拟机管理模块，主要是全体vminfolist
 List<VMInfoBean> vminfoblist=(List<VMInfoBean>)request.getAttribute("allvmdata");
 
 
-//初始化vmstatusCollectionList-----------FileCheck模块
-List<VMList> vmdata=(List<VMList>)request.getAttribute("vmdata");
+//初始化usrvmstatusCollectionList  和 usrvmsysCollectionList---------FileCheck模块，主要是usr对应的vmlist
+List<VMList> usrvmlist=(List<VMList>)request.getAttribute("usrvmlist");
+int lastRunStatus=1;
+int usrvmlistlength=usrvmlist.size();
 
+System.out.println("usrvmlistlength is : "+usrvmlistlength);
+
+for(int i = 0 ; i < usrvmlistlength; i++){
+			
+				VMList vmlist=usrvmlist.get(i);
+				
+				//维护usrvmsysCollectionList
+				
+				//System.out.println("usr sys info:  "+vmlist.getSystemid()+"        "+vmlist.getSysname()+"       "+vmlist.getSysversion()+"       "+vmlist.getSysurl());
+				
+				out.print("<script>manager.addUsrNewSystem("+vmlist.getSystemid()+",'"+vmlist.getSysname()+"','"
+							+vmlist.getSysversion()+"','"+vmlist.getSysurl()+"')</script>");
+				
+				ArrayList<Integer> vmidlist=vmlist.getVmid();
+				ArrayList<String> vmiplist=vmlist.getIplist();
+				ArrayList<Integer> vmptlist=vmlist.getPortlist();
+				ArrayList<Integer> vmstatlist=vmlist.getStatus();
+				
+				int size=vmlist.getVmidLength();
+				
+				System.out.println("size is : "+size);
+				
+				for (int j=0;j<size;j++)
+				{
+				
+						int vmid=vmidlist.get(j);
+						String ipadd=vmiplist.get(j);
+						int port=vmptlist.get(j);
+						int status=vmstatlist.get(j);
+						
+						out.print("<script>manager.addNewRunItem("+vmid+",'"+ipadd+"',"+port+","+status+","+vmlist.getSystemid()+")</script>");
+					
+				}
+			
+}
 
  %>
 
@@ -308,90 +338,7 @@ List<VMList> vmdata=(List<VMList>)request.getAttribute("vmdata");
 	</div>
 
 
-	<!--  个人机器管理   -->
-	<div id="tab-vmmanager" class="wrapper minsize">
-		<fieldset>
-				<legend>当前您登录的虚拟机</legend>
-				<div id="VMManagerListDiv" >
-				<%
-						if(sidVMNumberInfoList != null){
-									String str = "";
-									for (int i=0;i<sidVMNumberInfoListLength;i++)
-						    		{
-											SidVMNumberInfo item=sidVMNumberInfoList.get(i);
-    										int systemid=item.getSystemId();
-    										int number = item.getNumber();
-    										int j = 0;
-    										for (j =0; j<sysinfoLength;j ++)
-							    			{
-								    				SysInfoBean tmp=sysinfo.get(j);
-								    				if (tmp.getSystemid()==systemid)
-								    				{
-								    					break;
-								    				}
-							    			}
-							    			//如果找不到对应的sysinfo，这个情况不可能发生
-							    			if(j >= sysinfoLength){
-							    					continue;
-							    			}
-							    			SysInfoBean sysitem=sysinfo.get(j);
-							    			String sysurl=sysitem.getImgurl();
-							    			
-							    			System.out.println(sysurl);
-							    			
-							    			String sysname=sysitem.getName();
-							    			String sysversion=sysitem.getVersion();
-							    			str+="<div class='fcvmslistitem'>"; 
-							    			str+="<div class='fcvmslisticon'>";
-							    			
-							    			//绝对路径
-							    			//String tmpUrl = application.getRealPath("/");
-							    			//System.out.println(tmpUrl);
-							    			
-							    			//str+="<img src='"+tmpUrl+"/img/osinfo/"+sysurl+".png' />";
-							    			str+="<img src=./img/osinfo/"+sysurl+".png />";
-							    			str+="</div>";
-											    		
-											str+="<div>";
-							    			str+="<table  class='usostable'><thead class='mhiden'><tr><td></td><td></td><td></td><td></td><tr></thead>";
-							    			str+="<tbody>";
-							    			str+="<tr class='trfcColor1'><td><b>系统</b></td><td>"+sysname+"</td></tr>";
-							    			str+="<tr class='trfcColor2'><td><b>版本</b></td><td>"+sysversion+"</td></tr>";
-							    			str+="<tr class='trfcColor1'><td><b>数量</b></td><td class='usostabletd'>"+number+"</td></tr>";
-							    			str+="<tr class='trfcColor2'><td><a class='table-a' href='javascript:void(0)' onclick='manager.addOrDeleteUserOS("+systemid+",1,this)'><b>增加</b></a></td>";
-							    			str+="<td><a class='table-a' href='javascript:void(0)' onclick='manager.addOrDeleteUserOS("+systemid+",-1,this)'><b>删除</b></a></td></tr>";
-							    			str+="</tobdy>";
-							    			str+="</table>";
-							    			str+="</div>";
-							    			str+="</div>";
-							    			
-							    			//JS中：把一个新的NowUserOwnSidVMNumberInfo存到NowUserOwnSidVMNumberInfoList中
-							    			//妹的，名太长了也不好，就是当前用户的Systemid 和 vm的数量的一个info
-							    			out.print("<script>manager.addNowUserOwnSidVMNumberInfo("+systemid+","+number+")</script>");
-									}
-									out.print(str);
-						}	
-				 %>
-				 <!-- 闭合  div id="VMManagerListDiv-->
-				 </div>
-		<!--  闭合一个 fieldset-->		
-		</fieldset>
-
-		<div class='clearB heigth20'></div>
-			<div class='upnextArea'>
-			<span>选择一个系统</span>
-			<span>
-			<select class="jq_chosen dyosselect" >
-			<%
-			out.print(osOptions);
-			%>
-			</select>
-			</span>
-					&nbsp;&nbsp;&nbsp;<input type="button" class="btn btn-green big" value="添加" onclick='manager.addNewUserOS();' />
-			</div>
-		
-	</div>
-
+	
 
 
 

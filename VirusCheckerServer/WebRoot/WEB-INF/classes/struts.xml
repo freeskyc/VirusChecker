@@ -2,6 +2,22 @@
 <!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
 <struts>
 
+
+<!-- 在这里写个语法。。方便自己查看。。。 
+< param name = "includeProperties" > < / param > 
+includeProperties: 这个属性表示要包含进JSON数据中的数据。
+
+< param name="excludeProperties" >< / param >
+excludeProperties: 这个属性表示不要包含进JSON数据中的数据。
+
+< param name="excludeNullProperties" >true< / param >
+excludeNullProperties: 这个属性表示去除空数据。
+
+< param name="ignoreHierarchy" >false< / param >
+ignoreHierarchy : 这个属性表示是否忽略等级，也就是继承关系,设置为 false 后会将父类和子类的属性一起返回
+ -->
+ 
+ 
  <package name="struts2" namespace="/" extends="struts-default,json-default">  
         <action name="loginAction" class="com.action.loginAction">  
         
@@ -87,6 +103,53 @@
 						</param>
 				</result>
 		</action>
+		
+		<action name="ajaxSendStartMoitorSingalAction" class="com.action.ajaxSendStartMoitorSingalAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						filename,vmids
+						</param>
+				</result>
+		</action>
 
+		<action name="ajaxCheckMonitorFinshedAction" class="com.action.ajaxCheckMonitorFinshedAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+						vmids
+						</param>
+				</result>
+		</action>
+
+		<action name="ajaxStartVMAction" class="com.action.ajaxStartVMAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+							id
+						</param>
+				</result>
+		</action>
+		
+		<action name="ajaxShutdownVMAction" class="com.action.ajaxShutdownVMAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+							id
+						</param>
+				</result>
+		</action>
+		
+		<action name="ajaxRestartVMAction" class="com.action.ajaxRestartVMAction">
+				<result name="success" type="json">
+						<!-- 不需要序列化的元素 -->
+						<param name="excludeProperties">
+							id
+						</param>
+				</result>
+		</action>
+		
+		
+		
   </package>
 </struts>    

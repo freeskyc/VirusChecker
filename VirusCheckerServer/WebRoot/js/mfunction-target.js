@@ -642,7 +642,7 @@ VManager = function() {
 	};
 
 	// ////////////////////////////////////////////// Process 3
-	var monitorItemCollection; // 监控VM '编号' 序列
+	var ; // 监控VM '编号' 序列
 	var isMonitorStart = false;// 是否开始监控
 	var monitorProgressCollection = [ "监控中", "运行完毕" ];
 	var lastMonitorProgressStatus = 1;
